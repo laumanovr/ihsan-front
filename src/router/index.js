@@ -32,6 +32,14 @@ const routes = [
 				meta: {
 					requireAuth: true
 				}
+			},
+			{
+				path: 'department',
+				name: 'department',
+				component: loadComponent('manage/Department'),
+				meta: {
+					requireAuth: true
+				}
 			}
 		]
 	}
