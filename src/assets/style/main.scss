@@ -1,0 +1,15 @@
+@import "toaster";
+
+.btn {
+  width: 100%;
+  height: 40px;
+  color: #fff;
+  border-radius: 5px;
+  &.blue-primary {
+    background: #4782DA;
+  }
+}
+
+.v-text-field > .v-input__control > .v-input__slot {
+  min-height: 50px !important;
+}
