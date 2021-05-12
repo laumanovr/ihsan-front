@@ -29,7 +29,7 @@ export default {
 		.manage-content {
 			width: 100%;
 			.main-content {
-				padding: 0 16px;
+				padding: 16px;
 			}
 		}
 	}
