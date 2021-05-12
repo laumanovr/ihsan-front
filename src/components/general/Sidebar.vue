@@ -19,22 +19,22 @@ import InlineSvg from 'vue-inline-svg';
 import {SidebarService} from '../../services/sidebar.service';
 
 export default {
-		components: {
-			InlineSvg
-		},
-		data() {
-			return {
-				sidebars: []
-			}
-		},
-		async created() {
-			try {
-				this.sidebars = await SidebarService.fetchSidebarList();
-			} catch (err) {
-				this.$toast.error(err);
-			}
+	components: {
+		InlineSvg
+	},
+	data() {
+		return {
+			sidebars: []
+		};
+	},
+	async created() {
+		try {
+			this.sidebars = await SidebarService.fetchSidebarList();
+		} catch (err) {
+			this.$toast.error(err);
 		}
 	}
+};
 </script>
 
 <style lang="scss">

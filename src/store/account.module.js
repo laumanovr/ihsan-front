@@ -36,7 +36,7 @@ const actions = {
 
 const mutations = {
 	setUser(state, data) {
-		state.user = data
+		state.user = data;
 	},
 	setError(state, err) {
 		state.onError = err;

@@ -16,13 +16,13 @@
 </template>
 
 <script>
-	export default {
-		computed: {
-			userProfile() {
-				return this.$store.state.account.user;
-			}
+export default {
+	computed: {
+		userProfile() {
+			return this.$store.state.account.user;
 		}
 	}
+};
 </script>
 
 <style lang="scss">

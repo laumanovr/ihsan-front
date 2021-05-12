@@ -27,49 +27,49 @@
 import {mapState} from 'vuex';
 import PreLoader from '@/components/general/PreLoader';
 
-	export default {
-		components: {
-			PreLoader
-		},
-		data() {
-			return {
-				isLoading: false,
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				emailRule: [
-					(v) => !!v || 'Email обязательный',
-					(v) => /^[a-zA-Z0-9()*_\-!#$%^&*,."'@\][]+$/.test(v) || 'Email должен быть на латинице',
-					(v) => {
-						const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-						return pattern.test(v) || 'Email должен быть валидным';
-					}
-				],
-				loginObj: {
-					email: '',
-					password: ''
+export default {
+	components: {
+		PreLoader
+	},
+	data() {
+		return {
+			isLoading: false,
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			emailRule: [
+				(v) => !!v || 'Email обязательный',
+				(v) => /^[a-zA-Z0-9()*_\-!#$%^&*,."'@\][]+$/.test(v) || 'Email должен быть на латинице',
+				(v) => {
+					const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+					return pattern.test(v) || 'Email должен быть валидным';
 				}
+			],
+			loginObj: {
+				email: '',
+				password: ''
 			}
-		},
-		computed: {
-			...mapState('account', ['onError']),
-		},
-		methods: {
-			submitLogin() {
-				if (this.$refs.loginForm.validate()) {
-					this.isLoading = true;
-					this.$store.dispatch('account/userLogin', this.loginObj);
-				}
+		};
+	},
+	computed: {
+		...mapState('account', ['onError']),
+	},
+	methods: {
+		submitLogin() {
+			if (this.$refs.loginForm.validate()) {
+				this.isLoading = true;
+				this.$store.dispatch('account/userLogin', this.loginObj);
 			}
-		},
-		watch: {
-			onError(msg) {
-				if (msg) {
-					this.isLoading = false;
-					this.$toast.error(msg);
-					this.$store.state.account.onError = '';
-				}
+		}
+	},
+	watch: {
+		onError(msg) {
+			if (msg) {
+				this.isLoading = false;
+				this.$toast.error(msg);
+				this.$store.state.account.onError = '';
 			}
 		}
 	}
+};
 </script>
 
 <style lang="scss">

@@ -11,15 +11,15 @@
 </template>
 
 <script>
-	import Sidebar from '@/components/general/Sidebar';
-	import Header from '@/components/general/Header';
+import Sidebar from '@/components/general/Sidebar';
+import Header from '@/components/general/Header';
 
-	export default {
-		components: {
-			Sidebar,
-			Header
-		}
+export default {
+	components: {
+		Sidebar,
+		Header
 	}
+};
 </script>
 
 <style lang="scss">
