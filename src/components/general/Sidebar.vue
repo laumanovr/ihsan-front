@@ -29,7 +29,8 @@ export default {
 	},
 	async created() {
 		try {
-			this.sidebars = await SidebarService.fetchSidebarList();
+			const res = await SidebarService.fetchSidebarList();
+			this.sidebars = res.sort((a, b) => a.order - b.order);
 		} catch (err) {
 			this.$toast.error(err);
 		}
