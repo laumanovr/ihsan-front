@@ -83,71 +83,71 @@
 </template>
 
 <script>
-	import {ApplicationService} from '../../services/application.service';
+import {ApplicationService} from '../../services/application.service';
 
-	export default {
-		data() {
-			return {
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				isLoading: false,
-				allApplications: [],
-				currentPage: 1,
-				totalPages: [],
-				filterBody: {
-					statuses: ['ISSUED', 'SAVING'],
-					userId: ''
-				}
+export default {
+	data() {
+		return {
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			isLoading: false,
+			allApplications: [],
+			currentPage: 1,
+			totalPages: [],
+			filterBody: {
+				statuses: ['ISSUED', 'SAVING'],
+				userId: ''
+			}
+		};
+	},
+	computed: {
+		userProfile() {
+			return this.$store.state.account.user;
+		},
+		permissions() {
+			if (this.userProfile.permissions) {
+				return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
+			}
+			return [];
+		},
+		isShowAll() {
+			return this.permissions.some(i => i.code === 'show-all-issued');
+		}
+	},
+	mounted() {
+		this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
+		this.getAllApplications();
+	},
+	methods: {
+		async getAllApplications() {
+			try {
+				this.isLoading = true;
+				const res = await ApplicationService.fetchApplicationList(this.currentPage, this.filterBody);
+				this.allApplications = res._embedded ? res._embedded.applicationResourceList : [];
+				this.totalPages = new Array(res.page.totalPages).fill(0).map((i, p) => p + 1);
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
 			}
 		},
-		computed: {
-			userProfile() {
-				return this.$store.state.account.user;
-			},
-			permissions() {
-				if (this.userProfile.permissions) {
-					return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
-				}
-				return [];
-			},
-			isShowAll() {
-				return this.permissions.some(i => i.code === 'show-all-issued');
-			}
-		},
-		mounted() {
-			this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
-			this.getAllApplications();
-		},
-		methods: {
-			async getAllApplications() {
-				try {
-					this.isLoading = true;
-					const res = await ApplicationService.fetchApplicationList(this.currentPage, this.filterBody);
-					this.allApplications = res._embedded ? res._embedded.applicationResourceList : [];
-					this.totalPages = new Array(res.page.totalPages).fill(0).map((i, p) => p + 1);
-					this.isLoading = false;
-				} catch (err) {
-					this.$toast.error(err);
-					this.isLoading = false;
-				}
-			},
 
-			paginate(nav) {
-				if (nav === 'right' && this.currentPage < this.totalPages.length) {
-					this.currentPage += 1;
-					this.getAllApplications();
-				}
-				if (nav === 'left' && this.currentPage > 1) {
-					this.currentPage -= 1;
-					this.getAllApplications();
-				}
-			},
-
-			jumpToPage(page) {
-				this.currentPage = page;
+		paginate(nav) {
+			if (nav === 'right' && this.currentPage < this.totalPages.length) {
+				this.currentPage += 1;
 				this.getAllApplications();
 			}
+			if (nav === 'left' && this.currentPage > 1) {
+				this.currentPage -= 1;
+				this.getAllApplications();
+			}
+		},
+
+		jumpToPage(page) {
+			this.currentPage = page;
+			this.getAllApplications();
 		}
 	}
+};
 </script>
 
 <style lang="scss">

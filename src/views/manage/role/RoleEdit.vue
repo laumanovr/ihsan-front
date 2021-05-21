@@ -34,83 +34,83 @@
 </template>
 
 <script>
-	import {PermissionService} from '../../../services/permission.service';
-	import {RoleService} from '../../../services/role.service';
+import {PermissionService} from '../../../services/permission.service';
+import {RoleService} from '../../../services/role.service';
 
-	export default {
-		data() {
-			return {
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				isLoading: false,
-				allPermissions: [],
-				roleObj: {
-					title: '',
-					code: '',
-					permissionIds: []
-				}
+export default {
+	data() {
+		return {
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			isLoading: false,
+			allPermissions: [],
+			roleObj: {
+				title: '',
+				code: '',
+				permissionIds: []
+			}
+		};
+	},
+	created() {
+		this.isLoading = true;
+		this.getSelectedRole();
+	},
+	methods: {
+		async getSelectedRole() {
+			try {
+				this.roleObj = await RoleService.fetchRoleById(this.$route.params.id);
+				this.roleObj.permissionIds = [];
+				console.log(this.roleObj);
+				this.getPermissionList();
+			} catch (err) {
+				this.$toast.error(err);
 			}
 		},
-		created() {
-			this.isLoading = true;
-			this.getSelectedRole();
-		},
-		methods: {
-			async getSelectedRole() {
-				try {
-					this.roleObj = await RoleService.fetchRoleById(this.$route.params.id);
-					this.roleObj.permissionIds = [];
-					console.log(this.roleObj);
-					this.getPermissionList();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
 
-			async getPermissionList() {
-				try {
-					const res = await PermissionService.fetchAllPermissions();
-					Object.entries(res.map((item) => {
-						this.roleObj.permissions.forEach((x) => {
-							if (item.id === x.id) {
-								item.selected = true;
-							}
-						});
-						return item;
-					}).reduce((obj, el) => {
-						obj[el.sidebar.id] = [...obj[el.sidebar.id] || [], el];
-						return obj;
-					}, {})).forEach((item) => {
-						this.allPermissions.push({sidebarName: item[1][0].sidebar.title, permissions: item[1]});
+		async getPermissionList() {
+			try {
+				const res = await PermissionService.fetchAllPermissions();
+				Object.entries(res.map((item) => {
+					this.roleObj.permissions.forEach((x) => {
+						if (item.id === x.id) {
+							item.selected = true;
+						}
 					});
+					return item;
+				}).reduce((obj, el) => {
+					obj[el.sidebar.id] = [...obj[el.sidebar.id] || [], el];
+					return obj;
+				}, {})).forEach((item) => {
+					this.allPermissions.push({sidebarName: item[1][0].sidebar.title, permissions: item[1]});
+				});
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
+		},
+
+		async submitSave() {
+			if (this.$refs.roleForm.validate()) {
+				try {
+					this.isLoading = true;
+					this.allPermissions.forEach((sb) => {
+						this.roleObj.permissionIds = [
+							...this.roleObj.permissionIds,
+							...sb.permissions.filter(i => i.selected).map(i => i.id)
+						];
+					});
+					await RoleService.updateRole(this.roleObj);
 					this.isLoading = false;
+					this.$toast.success('Успешно обновлено!');
+					this.$router.push({name: 'roles'});
 				} catch (err) {
 					this.$toast.error(err);
 					this.isLoading = false;
-				}
-			},
-
-			async submitSave() {
-				if (this.$refs.roleForm.validate()) {
-					try {
-						this.isLoading = true;
-						this.allPermissions.forEach((sb) => {
-							this.roleObj.permissionIds = [
-								...this.roleObj.permissionIds,
-								...sb.permissions.filter(i => i.selected).map(i => i.id)
-							]
-						});
-						await RoleService.updateRole(this.roleObj);
-						this.isLoading = false;
-						this.$toast.success('Успешно обновлено!');
-						this.$router.push({name: 'roles'});
-					} catch (err) {
-						this.$toast.error(err);
-						this.isLoading = false;
-					}
 				}
 			}
 		}
 	}
+};
 </script>
 
 <style lang="scss">

@@ -346,247 +346,247 @@
 </template>
 
 <script>
-	import {RegionService} from '../../services/region.service';
-	import {ProgramTypeService} from '../../services/program-type.service';
-	import {DepartmentService} from '../../services/department.service';
-	import {ApplicationService} from '../../services/application.service';
-	import {UserService} from '../../services/user.service';
-	import MaskedInput from 'vue-masked-input';
+import {RegionService} from '../../services/region.service';
+import {ProgramTypeService} from '../../services/program-type.service';
+import {DepartmentService} from '../../services/department.service';
+import {ApplicationService} from '../../services/application.service';
+import {UserService} from '../../services/user.service';
+import MaskedInput from 'vue-masked-input';
 
-	export default {
-		components: {
-			MaskedInput
+export default {
+	components: {
+		MaskedInput
+	},
+	data() {
+		return {
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			isLoading: false,
+			statuses: [{title: 'Выдан', value: 'ISSUED'}, {title: 'Накопительный', value: 'SAVING'}],
+			application: {
+				customerDto: {
+					address: '',
+					email: '',
+					firstName: '',
+					jobPlace: '',
+					lastName: '',
+					middleName: '',
+					phoneNumber: '',
+					pin: '',
+					regionId: 0
+				},
+				userId: 0,
+				departmentId: 0,
+				monthlyIncome: 0,
+				programTypeId: 0,
+				proposedLoan: 0,
+				registerDate: '',
+				statusType: 'QUEUE',
+				customerId: '',
+				admissionFee: 0,
+				admissionFeePercentage: 0,
+				dateOfIssue: '',
+				loanAmount: 0,
+				loanTerm: 0,
+				membershipFee: 0,
+				ownContribution: 0,
+				ownContributionPercentage: 0,
+				preliminaryDate: '',
+				sharePayment: 0,
+				totalPayment: 0,
+			},
+			parentLocationId: '',
+			selectedApp: '',
+			mode: '',
+			allApplications: [],
+			regionList: [],
+			districtList: [],
+			programTypes: [],
+			departmentList: [],
+			allUsers: [],
+			filterBody: {
+				statuses: ['QUEUE'],
+				userId: '',
+			},
+			currentPage: 1,
+			totalPages: [],
+		};
+	},
+	computed: {
+		userProfile() {
+			return this.$store.state.account.user;
 		},
-		data() {
-			return {
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				isLoading: false,
-				statuses: [{title: 'Выдан', value: 'ISSUED'}, {title: 'Накопительный', value: 'SAVING'}],
-				application: {
-					customerDto: {
-						address: '',
-						email: '',
-						firstName: '',
-						jobPlace: '',
-						lastName: '',
-						middleName: '',
-						phoneNumber: '',
-						pin: '',
-						regionId: 0
-					},
-					userId: 0,
-					departmentId: 0,
-					monthlyIncome: 0,
-					programTypeId: 0,
-					proposedLoan: 0,
-					registerDate: '',
-					statusType: 'QUEUE',
-					customerId: '',
-					admissionFee: 0,
-					admissionFeePercentage: 0,
-					dateOfIssue: '',
-					loanAmount: 0,
-					loanTerm: 0,
-					membershipFee: 0,
-					ownContribution: 0,
-					ownContributionPercentage: 0,
-					preliminaryDate: '',
-					sharePayment: 0,
-					totalPayment: 0,
-				},
-				parentLocationId: '',
-				selectedApp: '',
-				mode: '',
-				allApplications: [],
-				regionList: [],
-				districtList: [],
-				programTypes: [],
-				departmentList: [],
-				allUsers: [],
-				filterBody: {
-					statuses: ['QUEUE'],
-					userId: '',
-				},
-				currentPage: 1,
-				totalPages: [],
+		permissions() {
+			if (this.userProfile.permissions) {
+				return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
+			}
+			return [];
+		},
+		isShowAll() {
+			return this.permissions.some(i => i.code === 'show-all-queue');
+		}
+	},
+	mounted() {
+		this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
+		this.getAllApplications();
+		this.getAllRegions();
+		this.getProgramTypes();
+		this.getDepartments();
+		this.getAllUsers();
+	},
+	methods: {
+		async getAllApplications() {
+			try {
+				this.isLoading = true;
+				const res = await ApplicationService.fetchApplicationList(this.currentPage, this.filterBody);
+				this.allApplications = res._embedded ? res._embedded.applicationResourceList : [];
+				this.totalPages = new Array(res.page.totalPages).fill(0).map((i, p) => p + 1);
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
 			}
 		},
-		computed: {
-			userProfile() {
-				return this.$store.state.account.user;
-			},
-			permissions() {
-				if (this.userProfile.permissions) {
-					return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
-				}
-				return [];
-			},
-			isShowAll() {
-				return this.permissions.some(i => i.code === 'show-all-queue');
-			}
-		},
-		mounted() {
-			this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
-			this.getAllApplications();
-			this.getAllRegions();
-			this.getProgramTypes();
-			this.getDepartments();
-			this.getAllUsers();
-		},
-		methods: {
-			async getAllApplications() {
-				try {
-					this.isLoading = true;
-					const res = await ApplicationService.fetchApplicationList(this.currentPage, this.filterBody);
-					this.allApplications = res._embedded ? res._embedded.applicationResourceList : [];
-					this.totalPages = new Array(res.page.totalPages).fill(0).map((i, p) => p + 1);
-					this.isLoading = false;
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
 
-			paginate(nav) {
-				if (nav === 'right' && this.currentPage < this.totalPages.length) {
-					this.currentPage += 1;
-					this.getAllApplications();
-				}
-				if (nav === 'left' && this.currentPage > 1) {
-					this.currentPage -= 1;
-					this.getAllApplications();
-				}
-			},
-
-			jumpToPage(page) {
-				this.currentPage = page;
+		paginate(nav) {
+			if (nav === 'right' && this.currentPage < this.totalPages.length) {
+				this.currentPage += 1;
 				this.getAllApplications();
-			},
+			}
+			if (nav === 'left' && this.currentPage > 1) {
+				this.currentPage -= 1;
+				this.getAllApplications();
+			}
+		},
 
-			async getAllUsers() {
-				try {
-					const res = await UserService.fetchUserList();
-					this.allUsers = res.map((user) => {
-						user.fullName = `${user.lastName} ${user.firstName}`;
-						return user;
-					});
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
+		jumpToPage(page) {
+			this.currentPage = page;
+			this.getAllApplications();
+		},
 
-			async getAllRegions() {
-				try {
-					this.regionList = await RegionService.fetchRegionList();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async getDistrict(regionId) {
-				try {
-					this.districtList = await RegionService.fetchDistrictList(regionId);
-				} catch (err) {
-					this.$toast.error(err);
-					this.isLoading = false;
-				}
-			},
-
-			async getProgramTypes() {
-				try {
-					this.programTypes = await ProgramTypeService.fetchAllProgramTypes();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async getDepartments() {
-				try {
-					this.departmentList = await DepartmentService.fetchDepartmentList();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async toggleAppModal(mode) {
-				this.mode = mode;
-				if (mode === 'add') {
-					this.application = {customerDto: {}, statusType: 'QUEUE'};
-				}
-				if (mode === 'edit') {
-					this.application = this.selectedApp;
-					this.application.customerDto = this.selectedApp.customerResource;
-					this.application.customerId = this.application.customerDto.id;
-					this.application.statusType = 'QUEUE';
-					try {
-						this.isLoading = true;
-						const res = await RegionService.findById(this.application.customerDto.regionId);
-						this.parentLocationId = res.parentId;
-						await this.getDistrict(this.parentLocationId);
-						this.isLoading = false;
-					} catch (err) {
-						this.$toast.error(err);
-						this.isLoading = false;
-					}
-				}
-				this.$modal.toggle('app-modal');
-			},
-
-			onSelectApp(app) {
-				this.selectedApp = app.checked ? app : '';
-				this.allApplications.map((item) => {
-					if (app.id !== item.id) {
-						item.checked = false;
-					}
-					return item;
+		async getAllUsers() {
+			try {
+				const res = await UserService.fetchUserList();
+				this.allUsers = res.map((user) => {
+					user.fullName = `${user.lastName} ${user.firstName}`;
+					return user;
 				});
-			},
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
 
-			async submitSave() {
-				if (this.$refs.appForm.validate()) {
-					try {
-						this.isLoading = true;
-						if (this.mode === 'add') {
-							await ApplicationService.create(this.application);
-							this.getAllApplications();
-						}
-						if (this.mode === 'edit') {
-							await ApplicationService.update(this.application);
-						}
-						this.$toast.success(this.mode === 'add' ? 'Успешно создано!' : 'Успешно обновлено!');
-						this.toggleAppModal();
-						this.isLoading = false;
-					} catch (err) {
-						this.$toast.error(err);
-						this.isLoading = false;
-					}
-				}
-			},
+		async getAllRegions() {
+			try {
+				this.regionList = await RegionService.fetchRegionList();
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
 
-			async approveApp(isConfirm) {
-				if (isConfirm) {
-					this.application = this.selectedApp;
-					this.application.customerDto = this.selectedApp.customerResource;
-					this.$modal.show('approve-modal');
-					return;
-				}
-				if (!this.$refs.approveForm.validate()) {
-					this.$toast.info('Вы не заполнили все поля!');
-					return;
-				}
+		async getDistrict(regionId) {
+			try {
+				this.districtList = await RegionService.fetchDistrictList(regionId);
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
+		},
+
+		async getProgramTypes() {
+			try {
+				this.programTypes = await ProgramTypeService.fetchAllProgramTypes();
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async getDepartments() {
+			try {
+				this.departmentList = await DepartmentService.fetchDepartmentList();
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async toggleAppModal(mode) {
+			this.mode = mode;
+			if (mode === 'add') {
+				this.application = {customerDto: {}, statusType: 'QUEUE'};
+			}
+			if (mode === 'edit') {
+				this.application = this.selectedApp;
+				this.application.customerDto = this.selectedApp.customerResource;
+				this.application.customerId = this.application.customerDto.id;
+				this.application.statusType = 'QUEUE';
 				try {
 					this.isLoading = true;
-					await ApplicationService.update(this.application);
-					this.$modal.hide('approve-modal');
-					this.$toast.success('Успешно одобрено!');
-					this.$router.push({name: 'approvedApps'});
+					const res = await RegionService.findById(this.application.customerDto.regionId);
+					this.parentLocationId = res.parentId;
+					await this.getDistrict(this.parentLocationId);
 					this.isLoading = false;
 				} catch (err) {
 					this.$toast.error(err);
 					this.isLoading = false;
 				}
+			}
+			this.$modal.toggle('app-modal');
+		},
+
+		onSelectApp(app) {
+			this.selectedApp = app.checked ? app : '';
+			this.allApplications.map((item) => {
+				if (app.id !== item.id) {
+					item.checked = false;
+				}
+				return item;
+			});
+		},
+
+		async submitSave() {
+			if (this.$refs.appForm.validate()) {
+				try {
+					this.isLoading = true;
+					if (this.mode === 'add') {
+						await ApplicationService.create(this.application);
+						this.getAllApplications();
+					}
+					if (this.mode === 'edit') {
+						await ApplicationService.update(this.application);
+					}
+					this.$toast.success(this.mode === 'add' ? 'Успешно создано!' : 'Успешно обновлено!');
+					this.toggleAppModal();
+					this.isLoading = false;
+				} catch (err) {
+					this.$toast.error(err);
+					this.isLoading = false;
+				}
+			}
+		},
+
+		async approveApp(isConfirm) {
+			if (isConfirm) {
+				this.application = this.selectedApp;
+				this.application.customerDto = this.selectedApp.customerResource;
+				this.$modal.show('approve-modal');
+				return;
+			}
+			if (!this.$refs.approveForm.validate()) {
+				this.$toast.info('Вы не заполнили все поля!');
+				return;
+			}
+			try {
+				this.isLoading = true;
+				await ApplicationService.update(this.application);
+				this.$modal.hide('approve-modal');
+				this.$toast.success('Успешно одобрено!');
+				this.$router.push({name: 'approvedApps'});
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
 			}
 		}
-	};
+	}
+};
 </script>
 
 <style lang="scss">

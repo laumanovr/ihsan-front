@@ -39,41 +39,41 @@
 </template>
 
 <script>
-	import {RoleService} from '../../../services/role.service';
+import {RoleService} from '../../../services/role.service';
 
-	export default {
-		data() {
-			return {
-				isLoading: false,
-				roleList: []
+export default {
+	data() {
+		return {
+			isLoading: false,
+			roleList: []
+		};
+	},
+	created() {
+		this.isLoading = true;
+		this.getRoleList();
+	},
+	computed: {
+		userProfile() {
+			return this.$store.state.account.user;
+		},
+		permissions() {
+			if (this.userProfile.permissions) {
+				return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
 			}
-		},
-		created() {
-			this.isLoading = true;
-			this.getRoleList();
-		},
-		computed: {
-			userProfile() {
-				return this.$store.state.account.user;
-			},
-			permissions() {
-				if (this.userProfile.permissions) {
-					return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
-				}
-				return [];
-			}
-		},
-		methods: {
-			async getRoleList() {
-				try {
-					const res = await RoleService.fetchAllRoles();
-					this.roleList = res.filter((role) => role.code !== 'ROLE_SUPER_ADMIN');
-					this.isLoading = false;
-				} catch (err) {
-					this.$toast.error(err);
-					this.isLoading = false;
-				}
+			return [];
+		}
+	},
+	methods: {
+		async getRoleList() {
+			try {
+				const res = await RoleService.fetchAllRoles();
+				this.roleList = res.filter((role) => role.code !== 'ROLE_SUPER_ADMIN');
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
 			}
 		}
 	}
+};
 </script>

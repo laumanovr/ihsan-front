@@ -140,163 +140,163 @@
 </template>
 
 <script>
-	import {UserService} from '../../services/user.service';
-	import {DepartmentService} from '../../services/department.service';
-	import {RoleService} from '../../services/role.service';
+import {UserService} from '../../services/user.service';
+import {DepartmentService} from '../../services/department.service';
+import {RoleService} from '../../services/role.service';
 
-	export default {
-		data() {
-			return {
-				isLoading: false,
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				emailRule: [
-					(v) => !!v || 'Email обязательный',
-					(v) => /^[a-zA-Z0-9()*_\-!#$%^&*,."'@\][]+$/.test(v) || 'Email должен быть на латинице',
-					(v) => {
-						const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-						return pattern.test(v) || 'Email должен быть валидным';
-					}
-				],
-				userObj: {
-					firstName: '',
-					lastName: '',
-					middleName: '',
-					email: '',
-					password: '',
-					departmentList: [],
-					phone: '',
-					roleId: 0,
-					address: '',
-					birthday: '',
-					position: '',
-					profileType: ''
-				},
-				mode: '',
-				allUsers: [],
-				departments: [],
-				roles: []
+export default {
+	data() {
+		return {
+			isLoading: false,
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			emailRule: [
+				(v) => !!v || 'Email обязательный',
+				(v) => /^[a-zA-Z0-9()*_\-!#$%^&*,."'@\][]+$/.test(v) || 'Email должен быть на латинице',
+				(v) => {
+					const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+					return pattern.test(v) || 'Email должен быть валидным';
+				}
+			],
+			userObj: {
+				firstName: '',
+				lastName: '',
+				middleName: '',
+				email: '',
+				password: '',
+				departmentList: [],
+				phone: '',
+				roleId: 0,
+				address: '',
+				birthday: '',
+				position: '',
+				profileType: ''
+			},
+			mode: '',
+			allUsers: [],
+			departments: [],
+			roles: []
+		};
+	},
+	computed: {
+		userProfile() {
+			return this.$store.state.account.user;
+		},
+		permissions() {
+			if (this.userProfile.permissions) {
+				return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
+			}
+			return [];
+		}
+	},
+	created() {
+		this.getDepartmentList();
+		this.getRoleList();
+		this.getAllUsers();
+	},
+	methods: {
+		async getAllUsers() {
+			try {
+				this.isLoading = true;
+				this.allUsers = await UserService.fetchUserList();
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
 			}
 		},
-		computed: {
-			userProfile() {
-				return this.$store.state.account.user;
-			},
-			permissions() {
-				if (this.userProfile.permissions) {
-					return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
-				}
-				return [];
+
+		async getDepartmentList() {
+			try {
+				this.departments = await DepartmentService.fetchDepartmentList();
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
 			}
 		},
-		created() {
-			this.getDepartmentList();
-			this.getRoleList();
-			this.getAllUsers();
+
+		async getRoleList() {
+			try {
+				const res = await RoleService.fetchAllRoles();
+				this.roles = res.filter((role) => role.code !== 'ROLE_SUPER_ADMIN');
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
 		},
-		methods: {
-			async getAllUsers() {
+
+		async toggleUserModal(mode, user) {
+			this.mode = mode;
+			if (mode === 'add') {
+				this.userObj = {departmentList: [''], birthday: '01.01.1970'};
+			}
+			if (mode === 'edit') {
 				try {
 					this.isLoading = true;
-					this.allUsers = await UserService.fetchUserList();
+					const res = await UserService.findById(user.id);
+					this.userObj = res;
+					this.userObj.roleId = res.roleIds[0];
+					this.userObj.departmentList = [res.departments[0].id];
+					this.userObj.birthday = '01.01.1970';
 					this.isLoading = false;
 				} catch (err) {
 					this.$toast.error(err);
-					this.isLoading = false;
 				}
-			},
+			}
+			this.$modal.toggle('user-modal');
+		},
 
-			async getDepartmentList() {
-				try {
-					this.departments = await DepartmentService.fetchDepartmentList();
-				} catch (err) {
-					this.$toast.error(err);
-					this.isLoading = false;
-				}
-			},
-
-			async getRoleList() {
-				try {
-					const res = await RoleService.fetchAllRoles();
-					this.roles = res.filter((role) => role.code !== 'ROLE_SUPER_ADMIN');
-				} catch (err) {
-					this.$toast.error(err);
-					this.isLoading = false;
-				}
-			},
-
-			async toggleUserModal(mode, user) {
-				this.mode = mode;
-				if (mode === 'add') {
-					this.userObj = {departmentList: [''], birthday: '01.01.1970'};
-				}
-				if (mode === 'edit') {
-					try {
-						this.isLoading = true;
-						const res = await UserService.findById(user.id);
-						this.userObj = res;
-						this.userObj.roleId = res.roleIds[0];
-						this.userObj.departmentList = [res.departments[0].id];
-						this.userObj.birthday = '01.01.1970';
-						this.isLoading = false;
-					} catch (err) {
-						this.$toast.error(err);
-					}
-				}
-				this.$modal.toggle('user-modal');
-			},
-
-			async resetPass(isConfirm, user) {
-				if (isConfirm) {
-					try {
-						this.isLoading = true;
-						const res = await UserService.findById(user.id);
-						this.userObj = res;
-						this.userObj.departmentIds = [res.departments[0].id];
-						this.userObj.birthday = '01.01.1970';
-						this.userObj.password = '111111';
-						this.userObj.departmentList = [];
-						this.isLoading = false;
-						this.$modal.show('reset-pass-modal');
-						return;
-					} catch (err) {
-						this.$toast.error(err);
-						return;
-					}
-				}
+		async resetPass(isConfirm, user) {
+			if (isConfirm) {
 				try {
 					this.isLoading = true;
-					await UserService.updateUser(this.userObj);
-					this.$toast.success('Пароль сброшен!');
-					this.$modal.hide('reset-pass-modal');
+					const res = await UserService.findById(user.id);
+					this.userObj = res;
+					this.userObj.departmentIds = [res.departments[0].id];
+					this.userObj.birthday = '01.01.1970';
+					this.userObj.password = '111111';
+					this.userObj.departmentList = [];
 					this.isLoading = false;
+					this.$modal.show('reset-pass-modal');
+					return;
 				} catch (err) {
 					this.$toast.error(err);
+					return;
 				}
-			},
+			}
+			try {
+				this.isLoading = true;
+				await UserService.updateUser(this.userObj);
+				this.$toast.success('Пароль сброшен!');
+				this.$modal.hide('reset-pass-modal');
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
 
-			async submitSaveUser() {
-				if (this.$refs.userForm.validate()) {
-					this.userObj.position = this.roles.find(i => i.id === this.userObj.roleId).title;
-					try {
-						this.isLoading = true;
-						if (this.mode === 'add') {
-							await UserService.createUser(this.userObj);
-						} else {
-							this.userObj.roleIds = [this.userObj.roleId];
-							this.userObj.departmentIds = this.userObj.departmentList;
-							await UserService.updateUser(this.userObj);
-						}
-						this.toggleUserModal();
-						this.getAllUsers();
-						this.$toast.success(this.mode === 'add' ? 'Успешно создано!' : 'Успешно обновлено!');
-					} catch (err) {
-						this.$toast.error(err);
-						this.isLoading = false;
+		async submitSaveUser() {
+			if (this.$refs.userForm.validate()) {
+				this.userObj.position = this.roles.find(i => i.id === this.userObj.roleId).title;
+				try {
+					this.isLoading = true;
+					if (this.mode === 'add') {
+						await UserService.createUser(this.userObj);
+					} else {
+						this.userObj.roleIds = [this.userObj.roleId];
+						this.userObj.departmentIds = this.userObj.departmentList;
+						await UserService.updateUser(this.userObj);
 					}
+					this.toggleUserModal();
+					this.getAllUsers();
+					this.$toast.success(this.mode === 'add' ? 'Успешно создано!' : 'Успешно обновлено!');
+				} catch (err) {
+					this.$toast.error(err);
+					this.isLoading = false;
 				}
 			}
 		}
 	}
+};
 </script>
 
 <style lang="scss">

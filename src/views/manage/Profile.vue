@@ -72,74 +72,74 @@
 </template>
 
 <script>
-	import {UserService} from '../../services/user.service';
+import {UserService} from '../../services/user.service';
 
-	export default {
-		data() {
-			return {
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				isLoading: false,
-				userObj: {
-					departmentIds: [],
-					roleIds: [],
-					departments: [{title: ''}]
-				},
-				mode: 'profile'
+export default {
+	data() {
+		return {
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			isLoading: false,
+			userObj: {
+				departmentIds: [],
+				roleIds: [],
+				departments: [{title: ''}]
+			},
+			mode: 'profile'
+		};
+	},
+	computed: {
+		userProfile() {
+			return this.$store.state.account.user;
+		}
+	},
+	created() {
+		this.getMyProfile();
+	},
+	methods: {
+		async getMyProfile() {
+			try {
+				this.isLoading = true;
+				this.userObj = await UserService.fetchMyProfile();
+				console.log(this.userObj);
+				this.userObj.departmentIds = this.userObj.departments.length ?  [this.userObj.departments[0].id] : [];
+				this.userObj.position = this.userProfile.roleTitle;
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
 			}
 		},
-		computed: {
-			userProfile() {
-				return this.$store.state.account.user;
+
+		switchMode(mode) {
+			this.mode = mode;
+			if (mode === 'password') {
+				this.getMyProfile();
 			}
+			if (mode === 'profile') {
+				delete this.userObj.password;
+			}
+			this.$nextTick(() => {
+				this.$refs.profileForm.resetValidation();
+			});
 		},
-		created() {
-			this.getMyProfile();
-		},
-		methods: {
-			async getMyProfile() {
+
+		async submitUser() {
+			if (this.$refs.profileForm.validate()) {
 				try {
 					this.isLoading = true;
-					this.userObj = await UserService.fetchMyProfile();
-					console.log(this.userObj);
-					this.userObj.departmentIds = this.userObj.departments.length ?  [this.userObj.departments[0].id] : [];
-					this.userObj.position = this.userProfile.roleTitle;
+					await UserService.updateUser(this.userObj);
+					this.$toast.success(this.mode === 'profile' ? 'Успешно обновлено!' : 'Пароль изменен!');
+					this.switchMode('profile');
 					this.isLoading = false;
 				} catch (err) {
 					this.$toast.error(err);
 					this.isLoading = false;
 				}
-			},
+			}
+		},
 
-			switchMode(mode) {
-				this.mode = mode;
-				if (mode === 'password') {
-					this.getMyProfile();
-				}
-				if (mode === 'profile') {
-					delete this.userObj.password;
-				}
-				this.$nextTick(() => {
-					this.$refs.profileForm.resetValidation();
-				});
-			},
-
-			async submitUser() {
-				if (this.$refs.profileForm.validate()) {
-					try {
-						this.isLoading = true;
-						await UserService.updateUser(this.userObj);
-						this.$toast.success(this.mode === 'profile' ? 'Успешно обновлено!' : 'Пароль изменен!');
-						this.switchMode('profile');
-						this.isLoading = false;
-					} catch (err) {
-						this.$toast.error(err);
-						this.isLoading = false;
-					}
-				}
-			},
-
-		}
 	}
+};
 </script>
 
 <style lang="scss">

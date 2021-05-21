@@ -38,66 +38,66 @@
 </template>
 
 <script>
-	import {PermissionService} from '../../../services/permission.service';
-	import {RoleService} from '../../../services/role.service';
+import {PermissionService} from '../../../services/permission.service';
+import {RoleService} from '../../../services/role.service';
 
-	export default {
-		data() {
-			return {
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				isLoading: false,
-				allPermissions: [],
-				roleObj: {
-					title: '',
-					code: '',
-					permissionIds: []
-				}
+export default {
+	data() {
+		return {
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			isLoading: false,
+			allPermissions: [],
+			roleObj: {
+				title: '',
+				code: '',
+				permissionIds: []
+			}
+		};
+	},
+	created() {
+		this.isLoading = true;
+		this.getPermissionList();
+	},
+	methods: {
+		async getPermissionList() {
+			try {
+				const res = await PermissionService.fetchAllPermissions();
+				Object.entries(res.reduce((obj, el) => {
+					obj[el.sidebar.id] = [...obj[el.sidebar.id] || [], el];
+					return obj;
+				}, {})).forEach((item) => {
+					this.allPermissions.push({sidebarName: item[1][0].sidebar.title, permissions: item[1]});
+				});
+				this.isLoading = false;
+				console.log(this.allPermissions);
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
 			}
 		},
-		created() {
-			this.isLoading = true;
-			this.getPermissionList();
-		},
-		methods: {
-			async getPermissionList() {
+
+		async submitSave() {
+			if (this.$refs.roleForm.validate()) {
 				try {
-					const res = await PermissionService.fetchAllPermissions();
-					Object.entries(res.reduce((obj, el) => {
-						obj[el.sidebar.id] = [...obj[el.sidebar.id] || [], el];
-						return obj;
-					}, {})).forEach((item) => {
-						this.allPermissions.push({sidebarName: item[1][0].sidebar.title, permissions: item[1]});
+					this.isLoading = true;
+					this.allPermissions.forEach((sb) => {
+						this.roleObj.permissionIds = [
+							...this.roleObj.permissionIds,
+							...sb.permissions.filter(i => i.selected).map(i => i.id)
+						];
 					});
+					await RoleService.createRole(this.roleObj);
 					this.isLoading = false;
-					console.log(this.allPermissions);
+					this.$toast.success('Роль успешно создана!');
+					this.$router.push({name: 'roles'});
 				} catch (err) {
 					this.$toast.error(err);
 					this.isLoading = false;
 				}
-			},
-
-			async submitSave() {
-				if (this.$refs.roleForm.validate()) {
-					try {
-						this.isLoading = true;
-						this.allPermissions.forEach((sb) => {
-							this.roleObj.permissionIds = [
-								...this.roleObj.permissionIds,
-								...sb.permissions.filter(i => i.selected).map(i => i.id)
-							]
-						});
-						await RoleService.createRole(this.roleObj);
-						this.isLoading = false;
-						this.$toast.success('Роль успешно создана!');
-						this.$router.push({name: 'roles'});
-					} catch (err) {
-						this.$toast.error(err);
-						this.isLoading = false;
-					}
-				}
 			}
 		}
 	}
+};
 </script>
 
 <style lang="scss">

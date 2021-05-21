@@ -323,198 +323,198 @@
 </template>
 
 <script>
-	import {RegionService} from '../../services/region.service';
-	import {ProgramTypeService} from '../../services/program-type.service';
-	import {DepartmentService} from '../../services/department.service';
-	import {ApplicationService} from '../../services/application.service';
-	import {UserService} from '../../services/user.service';
-	import MaskedInput from 'vue-masked-input';
+import {RegionService} from '../../services/region.service';
+import {ProgramTypeService} from '../../services/program-type.service';
+import {DepartmentService} from '../../services/department.service';
+import {ApplicationService} from '../../services/application.service';
+import {UserService} from '../../services/user.service';
+import MaskedInput from 'vue-masked-input';
 
-	export default {
-		components: {
-			MaskedInput,
-		},
-		data() {
-			return {
-				statuses: [{title: 'Выдан', value: 'ISSUED'}, {title: 'Накопительный', value: 'SAVING'}],
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				isLoading: false,
-				houseTypes: [{title: 'Квартира', value: 'APARTMENT'}, {title: 'Авто', value: 'TOYOTA'}],
-				allApplications: [],
-				regionList: [],
-				districtList: [],
-				programTypes: [],
-				departmentList: [],
-				allUsers: [],
-				infoDistrictList: [],
-				parentLocationId: '',
-				infoLocationId: '',
+export default {
+	components: {
+		MaskedInput,
+	},
+	data() {
+		return {
+			statuses: [{title: 'Выдан', value: 'ISSUED'}, {title: 'Накопительный', value: 'SAVING'}],
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			isLoading: false,
+			houseTypes: [{title: 'Квартира', value: 'APARTMENT'}, {title: 'Авто', value: 'TOYOTA'}],
+			allApplications: [],
+			regionList: [],
+			districtList: [],
+			programTypes: [],
+			departmentList: [],
+			allUsers: [],
+			infoDistrictList: [],
+			parentLocationId: '',
+			infoLocationId: '',
 
-				application: {
-					admissionFee: 0,
-					admissionFeePercentage: 0,
-					customerDto: {
-						address: '',
-						email: '',
-						firstName: '',
-						jobPlace: '',
-						jobTitle: '',
-						lastName: '',
-						middleName: '',
-						phoneNumber: '',
-						pin: '',
-						regionId: 0
-					},
-					customerId: 0,
-					dateOfIssue: '',
-					departmentId: 0,
-					loanAmount: 0,
-					loanTerm: 0,
-					membershipFee: 0,
-					monthlyIncome: 0,
-					ownContribution: 0,
-					ownContributionPercentage: 0,
-					preliminaryDate: '',
-					programTypeId: 0,
-					proposedLoan: 0,
-					registerDate: '',
-					sharePayment: 0,
-					totalPayment: 0,
-					userId: 0,
-					statusType: 'ISSUED'
+			application: {
+				admissionFee: 0,
+				admissionFeePercentage: 0,
+				customerDto: {
+					address: '',
+					email: '',
+					firstName: '',
+					jobPlace: '',
+					jobTitle: '',
+					lastName: '',
+					middleName: '',
+					phoneNumber: '',
+					pin: '',
+					regionId: 0
 				},
-				appInformation: {
-					applicationId: 0,
-					accommodationAddress: '',
-					districtCode: '',
-					houseCost: 0,
-					housingType: '',
-					identificationCode: '',
-					locationId: 0,
-					ltv: '',
-					pti: '',
-					room: 0,
-					totalArea: 0,
-					unitPrice: 0,
-					unitPriceDollar: 0,
-					yearBuild: 0,
-					materialBuilt: ''
-				},
-				infoMode: 'create'
+				customerId: 0,
+				dateOfIssue: '',
+				departmentId: 0,
+				loanAmount: 0,
+				loanTerm: 0,
+				membershipFee: 0,
+				monthlyIncome: 0,
+				ownContribution: 0,
+				ownContributionPercentage: 0,
+				preliminaryDate: '',
+				programTypeId: 0,
+				proposedLoan: 0,
+				registerDate: '',
+				sharePayment: 0,
+				totalPayment: 0,
+				userId: 0,
+				statusType: 'ISSUED'
+			},
+			appInformation: {
+				applicationId: 0,
+				accommodationAddress: '',
+				districtCode: '',
+				houseCost: 0,
+				housingType: '',
+				identificationCode: '',
+				locationId: 0,
+				ltv: '',
+				pti: '',
+				room: 0,
+				totalArea: 0,
+				unitPrice: 0,
+				unitPriceDollar: 0,
+				yearBuild: 0,
+				materialBuilt: ''
+			},
+			infoMode: 'create'
+		};
+	},
+	created() {
+		this.isLoading = true;
+		this.getApplicationById();
+		this.getAllRegions();
+		this.getProgramTypes();
+		this.getDepartments();
+		this.getAllUsers();
+	},
+	methods: {
+		async getApplicationById() {
+			try {
+				this.application = await ApplicationService.findById(this.$route.params.id);
+				this.application.customerDto = this.application.customerResource;
+				const res = await RegionService.findById(this.application.customerDto.regionId);
+				this.parentLocationId = res.parentId;
+				await this.getDistrict(this.parentLocationId);
+				await this.getAppEstateInformation();
+			} catch (err) {
+				this.$toast.error(err);
 			}
 		},
-		created() {
-			this.isLoading = true;
-			this.getApplicationById();
-			this.getAllRegions();
-			this.getProgramTypes();
-			this.getDepartments();
-			this.getAllUsers();
+
+		async getAppEstateInformation() {
+			try {
+				const resp = await ApplicationService.fetchAppEstateInfo(this.application.id);
+				if (Object.values(resp).length) {
+					this.infoMode = 'edit';
+					this.appInformation = Object.assign({}, resp[0], {materialBuilt: resp[0].materialBuild});
+					const region = await RegionService.findById(this.appInformation.locationId);
+					this.infoLocationId = region.parentId;
+					await this.getInfoDistrict(this.infoLocationId);
+				}
+				this.appInformation.applicationId = this.application.id;
+				this.isLoading = false;
+				console.log(this.appInformation);
+			} catch (err) {
+				this.$toast.error(err);
+			}
 		},
-		methods: {
-			async getApplicationById() {
-				try {
-					this.application = await ApplicationService.findById(this.$route.params.id);
-					this.application.customerDto = this.application.customerResource;
-					const res = await RegionService.findById(this.application.customerDto.regionId);
-					this.parentLocationId = res.parentId;
-					await this.getDistrict(this.parentLocationId);
-					await this.getAppEstateInformation();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
 
-			async getAppEstateInformation() {
+		async getAllUsers() {
+			try {
+				const res = await UserService.fetchUserList();
+				this.allUsers = res.map((user) => {
+					user.fullName = `${user.lastName} ${user.firstName}`;
+					return user;
+				});
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async getAllRegions() {
+			try {
+				this.regionList = await RegionService.fetchRegionList();
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async getDistrict(regionId) {
+			try {
+				this.districtList = await RegionService.fetchDistrictList(regionId);
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async getInfoDistrict(regionId) {
+			try {
+				this.infoDistrictList = await RegionService.fetchDistrictList(regionId);
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async getProgramTypes() {
+			try {
+				this.programTypes = await ProgramTypeService.fetchAllProgramTypes();
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async getDepartments() {
+			try {
+				this.departmentList = await DepartmentService.fetchDepartmentList();
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async submitSaveData() {
+			if (this.$refs.fullInfoForm.validate()) {
 				try {
-					const resp = await ApplicationService.fetchAppEstateInfo(this.application.id);
-					if (Object.values(resp).length) {
-						this.infoMode = 'edit';
-						this.appInformation = Object.assign({}, resp[0], {materialBuilt: resp[0].materialBuild});
-						const region = await RegionService.findById(this.appInformation.locationId);
-						this.infoLocationId = region.parentId;
-						await this.getInfoDistrict(this.infoLocationId);
+					this.isLoading = true;
+					await ApplicationService.update(this.application);
+					if (this.infoMode === 'create') {
+						await ApplicationService.createAppEstateInfo(this.appInformation);
+					} else {
+						await ApplicationService.updateAppEstateInfo(this.appInformation);
 					}
-					this.appInformation.applicationId = this.application.id;
+					this.$toast.success('Успешно сохранено!');
 					this.isLoading = false;
-					console.log(this.appInformation);
 				} catch (err) {
 					this.$toast.error(err);
+					this.isLoading = false;
 				}
-			},
-
-			async getAllUsers() {
-				try {
-					const res = await UserService.fetchUserList();
-					this.allUsers = res.map((user) => {
-						user.fullName = `${user.lastName} ${user.firstName}`;
-						return user;
-					});
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async getAllRegions() {
-				try {
-					this.regionList = await RegionService.fetchRegionList();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async getDistrict(regionId) {
-				try {
-					this.districtList = await RegionService.fetchDistrictList(regionId);
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async getInfoDistrict(regionId) {
-				try {
-					this.infoDistrictList = await RegionService.fetchDistrictList(regionId);
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async getProgramTypes() {
-				try {
-					this.programTypes = await ProgramTypeService.fetchAllProgramTypes();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async getDepartments() {
-				try {
-					this.departmentList = await DepartmentService.fetchDepartmentList();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async submitSaveData() {
-				if (this.$refs.fullInfoForm.validate()) {
-					try {
-						this.isLoading = true;
-						await ApplicationService.update(this.application);
-						if (this.infoMode === 'create') {
-							await ApplicationService.createAppEstateInfo(this.appInformation);
-						} else {
-							await ApplicationService.updateAppEstateInfo(this.appInformation);
-						}
-						this.$toast.success('Успешно сохранено!');
-						this.isLoading = false;
-					} catch (err) {
-						this.$toast.error(err);
-						this.isLoading = false;
-					}
-				}
-			},
-		}
+			}
+		},
 	}
+};
 </script>
 
 <style lang="scss">
