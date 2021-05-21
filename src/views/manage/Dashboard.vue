@@ -1,12 +1,13 @@
 <template>
 	<div class="dashboard-container">
-		Главня аналитика
+		<!--Главня аналитика-->
 	</div>
 </template>
 
 <script>
 export default {
-	mounted() {
+	beforeCreate() {
+		this.$router.push({name: 'applications'});
 	}
 };
 </script>
