@@ -14,23 +14,32 @@ const actions = {
 		try {
 			const user = await UserService.login(body);
 			window.localStorage.setItem('ihsanUser', JSON.stringify(user));
-			dispatch('getUserPermissions', user.roles[0].id);
+			dispatch('getUserPermissions', {roleId: user.roles[0].id, isRedirect: true});
 		} catch (err) {
 			commit('setError', err);
 		}
 	},
-	async getUserPermissions({commit}, roleId) {
+
+	async getUserPermissions({commit}, data) {
 		try {
-			const res = await RoleService.fetchRoleById(roleId);
+			const res = await RoleService.fetchRoleById(data.roleId);
 			const user = JSON.parse(window.localStorage.getItem('ihsanUser'));
 			user.permissions = res.permissions;
 			user.roleTitle = res.title;
 			commit('setUser', user);
 			window.localStorage.setItem('ihsanUser', JSON.stringify(user));
-			router.push('/user-manage');
+			if (data.isRedirect) {
+				router.push('/user-manage');
+			}
 		} catch (err) {
 			commit('setError', err);
 		}
+	},
+
+	logout({commit}) {
+		commit('removeUser');
+		window.localStorage.removeItem('ihsanUser');
+		router.push('/');
 	}
 };
 
@@ -40,6 +49,9 @@ const mutations = {
 	},
 	setError(state, err) {
 		state.onError = err;
+	},
+	removeUser(state) {
+		state.user = {};
 	}
 };
 
