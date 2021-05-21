@@ -4,7 +4,7 @@
 			<div class="notify">
 				<img src="../../assets/icons/ring-bell.svg">
 			</div>
-			<div class="fio">
+			<div class="fio" v-if="userProfile.user">
 				<div class="name">{{userProfile.user.firstName + ' ' + userProfile.user.lastName}}</div>
 				<div class="type">{{userProfile.roleTitle}}</div>
 			</div>
