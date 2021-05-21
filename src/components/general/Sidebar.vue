@@ -9,6 +9,14 @@
 					<inline-svg :src="require('../../assets/icons/' + item.icon)"/>
 					<span>{{item.title}}</span>
 				</router-link>
+				<router-link :to="{name: 'profile'}" class="tab">
+					<img src="../../assets/icons/person.svg"/>
+					<span>Профиль</span>
+				</router-link>
+				<div class="tab" @click="logout">
+					<img src="../../assets/icons/logout.svg">
+					<span>Выход</span>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -34,7 +42,12 @@ export default {
 		} catch (err) {
 			this.$toast.error(err);
 		}
-	}
+	},
+	methods: {
+		logout() {
+			this.$store.dispatch('account/logout');
+		}
+	},
 };
 </script>
 
@@ -44,6 +57,8 @@ export default {
 		min-height: 100vh;
 		background: #233044;
 		.sticky-block {
+			position: sticky;
+			top: 0;
 			.sidebar-logo {
 				height: 72px;
 				line-height: 72px;
@@ -60,15 +75,15 @@ export default {
 					padding: 13px 0;
 					cursor: pointer;
 					text-decoration: none;
-					svg {
-						width: 20px;
+					svg, img {
+						width: 24px;
 						margin: 0 15px 0 30px;
 					}
 					&.router-link-exact-active {
 						background: #1E293A;
 						color: #fff;
 						svg path {
-							fill: #fff;
+							/*fill: #fff;*/
 						}
 					}
 				}
