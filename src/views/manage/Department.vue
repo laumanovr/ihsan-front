@@ -3,7 +3,13 @@
 		<PreLoader v-if="isLoading"/>
 		<div class="head-title d-flex align-center justify-space-between">
 			<span>Филиалы</span>
-			<button class="btn blue-primary" @click="toggleTerritoryModal('add')">Добавить территорию</button>
+			<button
+				class="btn blue-primary"
+				@click="toggleTerritoryModal('add')"
+				v-if="permissions.some(i => i.code === 'create-territory')"
+			>
+				Добавить территорию
+			</button>
 		</div>
 
 		<div class="territory-content">
@@ -15,10 +21,18 @@
 						<span>{{territory.title}}</span>
 					</div>
 					<div class="actions d-flex align-center justify-space-between">
-						<button class="btn blue-primary" @click="toggleDepartmentModal('add', territory.id)">
+						<button
+							class="btn blue-primary"
+							@click="toggleDepartmentModal('add', territory.id)"
+							v-if="permissions.some(i => i.code === 'create-depart')"
+						>
 							Добавить филиал
 						</button>
-						<img src="../../assets/icons/edit-icon.svg" @click="toggleTerritoryModal('edit', territory)">
+						<img
+							src="../../assets/icons/edit-icon.svg"
+							@click="toggleTerritoryModal('edit', territory)"
+							v-if="permissions.some(i => i.code === 'edit-territory')"
+						>
 					</div>
 				</div>
 				<div class="departments" :class="{'expanded': territory.expanded}">
@@ -27,10 +41,20 @@
 						v-for="depart in territory.departments" :key="depart.id"
 					>
 						<span>{{depart.title}}</span>
-						<img
-							src="../../assets/icons/edit-icon.svg"
-							@click="toggleDepartmentModal('edit', territory.id, depart)"
-						>
+						<div class="d-flex align-center">
+							<img
+								src="../../assets/icons/edit-icon.svg"
+								title="Редактировать"
+								@click="toggleDepartmentModal('edit', territory.id, depart)"
+								v-if="permissions.some(i => i.code === 'edit-depart')"
+							>
+							<img
+								src="../../assets/icons/users.svg"
+								class="depart-user-icon"
+								title="Работники"
+								@click="showDepartmentUsers(depart)"
+							>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -58,7 +82,7 @@
 		<!--DEPARTMENT MODAL-->
 		<modal name="department-modal" height="auto">
 			<div class="modal-container">
-				<h3>Добавить филиал</h3>
+				<h3>{{departMode === 'add' ? 'Добавить филиал' : 'Изменить филиал' }}</h3>
 				<v-form ref="departForm">
 					<v-text-field
 						outlined
@@ -73,17 +97,40 @@
 				</div>
 			</div>
 		</modal>
+
+		<!--DEPARTMENT USERS MODAL-->
+		<modal name="depart-users-modal" height="auto">
+			<div class="modal-container">
+				<div class="d-flex justify-end">
+					<img src="../../assets/icons/close-icon.svg" @click="$modal.hide('depart-users-modal')">
+				</div>
+				<h3>Работники филиала: {{departmentObj.title}}</h3>
+				<table class="table depart-users-table">
+					<thead>
+					<tr>
+						<th>#</th>
+						<th>ФИО</th>
+						<th>Роль</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr v-for="(user, i) in departmentUsers" :key="user.id">
+						<td>{{i + 1}}</td>
+						<td>{{user.lastName+' '+user.firstName}}</td>
+						<td>{{user.roleTitle}}</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</modal>
 	</div>
 </template>
 
 <script>
 import {DepartmentService} from '../../services/department.service';
-import PreLoader from '@/components/general/PreLoader';
+import {UserService} from '../../services/user.service';
 
 export default {
-	components: {
-		PreLoader
-	},
 	data() {
 		return {
 			isLoading: false,
@@ -91,6 +138,7 @@ export default {
 			mode: 'add',
 			departMode: 'add',
 			territories: [],
+			departmentUsers: [],
 			territoryObj: {
 				title: '',
 				comment: ''
@@ -100,6 +148,17 @@ export default {
 				title: ''
 			}
 		};
+	},
+	computed: {
+		userProfile() {
+			return this.$store.state.account.user;
+		},
+		permissions() {
+			if (this.userProfile.permissions) {
+				return this.userProfile.permissions.filter(i => i.sidebar.href === this.$route.path);
+			}
+			return [];
+		}
 	},
 	created() {
 		this.getAllTerritories();
@@ -192,6 +251,19 @@ export default {
 					this.isLoading = false;
 				}
 			}
+		},
+
+		async showDepartmentUsers(depart) {
+			try {
+				this.isLoading = true;
+				this.departmentObj.title = depart.title;
+				this.departmentUsers = await UserService.fetchByDepartment(depart.id);
+				this.$modal.show('depart-users-modal');
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
 		}
 	}
 };
@@ -245,9 +317,20 @@ export default {
 						color: #202021;
 						padding: 10px 0;
 						border-top: 1px solid #C2C9D1;
+						.depart-user-icon {
+							width: 28px;
+							margin-left: 10px;
+						}
 					}
 				}
 			}
+		}
+		.depart-users-table {
+			table-layout: auto;
+		}
+		.vm--modal {
+			max-height: 600px;
+			overflow-y: auto;
 		}
 	}
 </style>
