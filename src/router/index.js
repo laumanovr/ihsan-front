@@ -34,13 +34,66 @@ const routes = [
 				}
 			},
 			{
+				path: 'approved-apps',
+				name: 'approvedApps',
+				component: loadComponent('manage/ApprovedApps'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'approved-apps/:id/full-info',
+				name: 'appFullInfo',
+				component: loadComponent('manage/AppFullInfo')
+			},
+			{
 				path: 'department',
 				name: 'department',
 				component: loadComponent('manage/Department'),
 				meta: {
 					requireAuth: true
 				}
-			}
+			},
+			{
+				path: 'roles',
+				name: 'roles',
+				component: loadComponent('manage/role/Role'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'role-create',
+				name: 'roleCreate',
+				component: loadComponent('manage/role/RoleCreate'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'role-edit/:id',
+				name: 'roleEdit',
+				component: loadComponent('manage/role/RoleEdit'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'users',
+				name: 'users',
+				component: loadComponent('manage/Users'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'profile',
+				name: 'profile',
+				component: loadComponent('manage/Profile'),
+				meta: {
+					requireAuth: true
+				}
+			},
 		]
 	}
 
