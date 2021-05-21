@@ -1,0 +1,542 @@
+<template>
+	<div class="app-additional-info">
+		<PreLoader v-if="isLoading"/>
+		<div class="head-title d-flex align-center">
+			<img src="../../assets/icons/arrow-dark.svg" @click="$router.go(-1)" class="back">
+			<span>Полная информация по заявке</span>
+		</div>
+
+		<v-form class="full-info" ref="fullInfoForm">
+			<div class="client-info">
+				<div class="created-by">Создан: <span>{{application.createdBy}}</span></div>
+				<h3>Информация о заемщике</h3>
+				<div class="masked-input">
+					<span>Дата регистрации</span>
+					<MaskedInput
+						class="masked-input"
+						mask="11.11.1111"
+						placeholder="ДД.ММ.ГГГГ"
+						v-model="application.registerDate"
+						autocomplete="new-password"
+					/>
+				</div>
+				<v-select
+					outlined
+					label="Филиал"
+					:items="departmentList"
+					item-text="title"
+					item-value="id"
+					v-model="application.departmentId"
+					:rules="requiredRule"
+				/>
+				<v-select
+					outlined
+					label="Программа"
+					:items="programTypes"
+					item-text="title"
+					item-value="id"
+					v-model="application.programTypeId"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Имя клиента"
+					v-model="application.customerDto.firstName"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Фамилия клиента"
+					v-model="application.customerDto.lastName"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Отчество клиента"
+					v-model="application.customerDto.middleName"
+					:rules="requiredRule"
+				/>
+				<v-select
+					outlined
+					label="Ответственный менеджер"
+					:items="allUsers"
+					item-text="fullName"
+					item-value="id"
+					v-model="application.userId"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Пин клиента"
+					v-model="application.customerDto.pin"
+					:rules="requiredRule"
+				/>
+				<v-select
+					outlined
+					label="Регион"
+					:items="regionList"
+					item-text="title"
+					item-value="id"
+					v-model="parentLocationId"
+					@change="getDistrict"
+				/>
+				<v-select
+					outlined
+					label="Район"
+					:items="districtList"
+					item-text="title"
+					item-value="id"
+					v-model="application.customerDto.regionId"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Адрес проживания"
+					v-model="application.customerDto.address"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Телефон"
+					v-model="application.customerDto.phoneNumber"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Место работы"
+					v-model="application.customerDto.jobPlace"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Доход"
+					v-model="application.monthlyIncome"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Предпологаемый займ"
+					v-model="application.proposedLoan"
+					:rules="requiredRule"
+				/>
+			</div>
+
+			<div class="loan-info">
+				<h3>Информация по займу</h3>
+				<v-select
+					outlined
+					label="Статус"
+					:items="statuses"
+					item-text="title"
+					item-value="value"
+					v-model="application.statusType"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Вступительный взнос"
+					v-model="application.admissionFee"
+					:rules="requiredRule"
+					type="number"
+				/>
+				<v-text-field
+					outlined
+					label="Вступит.взнос процент(4%, 5%, 7%)"
+					v-model="application.admissionFeePercentage"
+					:rules="requiredRule"
+					type="number"
+				/>
+				<v-text-field
+					outlined
+					label="Собственный вклад"
+					v-model="application.ownContribution"
+					:rules="requiredRule"
+					type="number"
+				/>
+				<v-text-field
+					outlined
+					label="Собствен.вклад процент(20%, 25%, 35%, 50%)"
+					v-model="application.ownContributionPercentage"
+					:rules="requiredRule"
+					type="number"
+				/>
+				<v-text-field
+					outlined
+					label="Сумма займа"
+					v-model="application.loanAmount"
+					:rules="requiredRule"
+					type="number"
+				/>
+				<v-text-field
+					outlined
+					label="Срок займа(мес.)"
+					v-model="application.loanTerm"
+					:rules="requiredRule"
+					type="number"
+				/>
+				<div class="masked-input">
+					<span>Предварительная дата</span>
+					<MaskedInput
+						class="masked-input"
+						mask="11.11.1111"
+						placeholder="ДД.ММ.ГГГГ"
+						v-model="application.preliminaryDate"
+						autocomplete="new-password"
+					/>
+				</div>
+				<div class="masked-input">
+					<span>Дата выдачи</span>
+					<MaskedInput
+						class="masked-input"
+						mask="11.11.1111"
+						placeholder="ДД.ММ.ГГГГ"
+						v-model="application.dateOfIssue"
+						autocomplete="new-password"
+					/>
+				</div>
+				<v-text-field
+					outlined
+					label="Членский взнос"
+					v-model="application.membershipFee"
+					:rules="requiredRule"
+					type="number"
+				/>
+				<v-text-field
+					outlined
+					label="Паевой взнос"
+					v-model="application.sharePayment"
+					:rules="requiredRule"
+					type="number"
+				/>
+				<v-text-field
+					outlined
+					label="Всего платеж"
+					v-model="application.totalPayment"
+					:rules="requiredRule"
+					type="number"
+				/>
+			</div>
+
+			<div class="deposit-info">
+				<h3>Информация по залогу</h3>
+				<v-text-field
+					outlined
+					label="Адрес жилья"
+					v-model="appInformation.accommodationAddress"
+					:rules="requiredRule"
+				/>
+				<v-select
+					outlined
+					label="Тип (жилье, авто)"
+					:items="houseTypes"
+					item-text="title"
+					item-value="value"
+					v-model="appInformation.housingType"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Идентиф. код жилья (гос.номер)"
+					v-model="appInformation.identificationCode"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Комнаты"
+					v-model="appInformation.room"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Год постройки"
+					v-model="appInformation.yearBuild"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Общая площадь (жилья/объем авто)"
+					v-model="appInformation.totalArea"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Стоимость жилья"
+					v-model="appInformation.houseCost"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Платеж/Доход (PTI)"
+					v-model="appInformation.pti"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Займ/стоимость жилья (LTV)"
+					v-model="appInformation.ltv"
+					:rules="requiredRule"
+				/>
+				<v-text-field
+					outlined
+					label="Цена за 1 м² (Сом)"
+					v-model="appInformation.unitPrice"
+				/>
+				<v-text-field
+					outlined
+					label="Цена за 1 м² (Долл.США)"
+					v-model="appInformation.unitPriceDollar"
+				/>
+				<v-text-field
+					outlined
+					label="Код района недвижимости"
+					v-model="appInformation.districtCode"
+				/>
+				<v-text-field
+					outlined
+					label="Материал строения цвет"
+					v-model="appInformation.materialBuilt"
+				/>
+				<v-select
+					outlined
+					label="Регион"
+					:items="regionList"
+					item-text="title"
+					item-value="id"
+					v-model="infoLocationId"
+					@change="getInfoDistrict"
+				/>
+				<v-select
+					outlined
+					label="Район"
+					:items="infoDistrictList"
+					item-text="title"
+					item-value="id"
+					v-model="appInformation.locationId"
+					:rules="requiredRule"
+				/>
+			</div>
+		</v-form>
+		<div class="d-flex justify-center">
+			<button class="btn green-primary" @click="submitSaveData">Сохранить</button>
+		</div>
+	</div>
+</template>
+
+<script>
+	import {RegionService} from '../../services/region.service';
+	import {ProgramTypeService} from '../../services/program-type.service';
+	import {DepartmentService} from '../../services/department.service';
+	import {ApplicationService} from '../../services/application.service';
+	import {UserService} from '../../services/user.service';
+	import MaskedInput from 'vue-masked-input';
+
+	export default {
+		components: {
+			MaskedInput,
+		},
+		data() {
+			return {
+				statuses: [{title: 'Выдан', value: 'ISSUED'}, {title: 'Накопительный', value: 'SAVING'}],
+				requiredRule: [(v) => !!v || 'Обязательное поле'],
+				isLoading: false,
+				houseTypes: [{title: 'Квартира', value: 'APARTMENT'}, {title: 'Авто', value: 'TOYOTA'}],
+				allApplications: [],
+				regionList: [],
+				districtList: [],
+				programTypes: [],
+				departmentList: [],
+				allUsers: [],
+				infoDistrictList: [],
+				parentLocationId: '',
+				infoLocationId: '',
+
+				application: {
+					admissionFee: 0,
+					admissionFeePercentage: 0,
+					customerDto: {
+						address: '',
+						email: '',
+						firstName: '',
+						jobPlace: '',
+						jobTitle: '',
+						lastName: '',
+						middleName: '',
+						phoneNumber: '',
+						pin: '',
+						regionId: 0
+					},
+					customerId: 0,
+					dateOfIssue: '',
+					departmentId: 0,
+					loanAmount: 0,
+					loanTerm: 0,
+					membershipFee: 0,
+					monthlyIncome: 0,
+					ownContribution: 0,
+					ownContributionPercentage: 0,
+					preliminaryDate: '',
+					programTypeId: 0,
+					proposedLoan: 0,
+					registerDate: '',
+					sharePayment: 0,
+					totalPayment: 0,
+					userId: 0,
+					statusType: 'ISSUED'
+				},
+				appInformation: {
+					applicationId: 0,
+					accommodationAddress: '',
+					districtCode: '',
+					houseCost: 0,
+					housingType: '',
+					identificationCode: '',
+					locationId: 0,
+					ltv: '',
+					pti: '',
+					room: 0,
+					totalArea: 0,
+					unitPrice: 0,
+					unitPriceDollar: 0,
+					yearBuild: 0,
+					materialBuilt: ''
+				},
+				infoMode: 'create'
+			}
+		},
+		created() {
+			this.isLoading = true;
+			this.getApplicationById();
+			this.getAllRegions();
+			this.getProgramTypes();
+			this.getDepartments();
+			this.getAllUsers();
+		},
+		methods: {
+			async getApplicationById() {
+				try {
+					this.application = await ApplicationService.findById(this.$route.params.id);
+					this.application.customerDto = this.application.customerResource;
+					const res = await RegionService.findById(this.application.customerDto.regionId);
+					this.parentLocationId = res.parentId;
+					await this.getDistrict(this.parentLocationId);
+					await this.getAppEstateInformation();
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			},
+
+			async getAppEstateInformation() {
+				try {
+					const resp = await ApplicationService.fetchAppEstateInfo(this.application.id);
+					if (Object.values(resp).length) {
+						this.infoMode = 'edit';
+						this.appInformation = Object.assign({}, resp[0], {materialBuilt: resp[0].materialBuild});
+						const region = await RegionService.findById(this.appInformation.locationId);
+						this.infoLocationId = region.parentId;
+						await this.getInfoDistrict(this.infoLocationId);
+					}
+					this.appInformation.applicationId = this.application.id;
+					this.isLoading = false;
+					console.log(this.appInformation);
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			},
+
+			async getAllUsers() {
+				try {
+					const res = await UserService.fetchUserList();
+					this.allUsers = res.map((user) => {
+						user.fullName = `${user.lastName} ${user.firstName}`;
+						return user;
+					});
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			},
+
+			async getAllRegions() {
+				try {
+					this.regionList = await RegionService.fetchRegionList();
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			},
+
+			async getDistrict(regionId) {
+				try {
+					this.districtList = await RegionService.fetchDistrictList(regionId);
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			},
+
+			async getInfoDistrict(regionId) {
+				try {
+					this.infoDistrictList = await RegionService.fetchDistrictList(regionId);
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			},
+
+			async getProgramTypes() {
+				try {
+					this.programTypes = await ProgramTypeService.fetchAllProgramTypes();
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			},
+
+			async getDepartments() {
+				try {
+					this.departmentList = await DepartmentService.fetchDepartmentList();
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			},
+
+			async submitSaveData() {
+				if (this.$refs.fullInfoForm.validate()) {
+					try {
+						this.isLoading = true;
+						await ApplicationService.update(this.application);
+						if (this.infoMode === 'create') {
+							await ApplicationService.createAppEstateInfo(this.appInformation);
+						} else {
+							await ApplicationService.updateAppEstateInfo(this.appInformation);
+						}
+						this.$toast.success('Успешно сохранено!');
+						this.isLoading = false;
+					} catch (err) {
+						this.$toast.error(err);
+						this.isLoading = false;
+					}
+				}
+			},
+		}
+	}
+</script>
+
+<style lang="scss">
+	.app-additional-info {
+		margin-bottom: 25px;
+		.back {
+			margin-right: 15px;
+			cursor: pointer;
+		}
+		.full-info {
+			padding: 15px;
+			border-radius: 5px;
+			max-width: 75%;
+			margin: 10px auto;
+			background: #fff;
+		}
+		.created-by {
+			text-align: right;
+			font-size: 12px;
+			span {
+				font-weight: bold;
+			}
+		}
+	}
+</style>
