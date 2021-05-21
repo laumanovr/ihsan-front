@@ -25,12 +25,8 @@
 
 <script>
 import {mapState} from 'vuex';
-import PreLoader from '@/components/general/PreLoader';
 
 export default {
-	components: {
-		PreLoader
-	},
 	data() {
 		return {
 			isLoading: false,
@@ -86,6 +82,7 @@ export default {
 				margin-bottom: 40px;
 			}
 			.btn {
+				max-width: inherit;
 				height: 45px;
 			}
 		}
