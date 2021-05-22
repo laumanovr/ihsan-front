@@ -119,6 +119,15 @@
 					v-model="application.proposedLoan"
 					:rules="requiredRule"
 				/>
+				<div class="attach-files" v-if="application.attachments.length">
+					<span>Прикрепленные файлы:</span>
+					<div class="items">
+						<div class="item d-flex align-center" v-for="(file, i) in application.attachments" :key="i">
+							<span>{{file.fileName}}</span>
+							<img src="../../assets/icons/download.svg" title="Скачать" @click="downloadAttachment(file)">
+						</div>
+					</div>
+				</div>
 			</div>
 
 			<div class="loan-info">
@@ -353,6 +362,7 @@ export default {
 			application: {
 				admissionFee: 0,
 				admissionFeePercentage: 0,
+				attachments: [],
 				customerDto: {
 					address: '',
 					email: '',
@@ -513,6 +523,24 @@ export default {
 				}
 			}
 		},
+
+		async downloadAttachment(file) {
+			try {
+				this.isLoading = true;
+				const blob = await ApplicationService.downloadFile(file.url);
+				const link = document.createElement('a');
+				link.href = window.URL.createObjectURL(new Blob([blob]));
+				link.download = file.fileName.replace(' ', '');
+				document.body.appendChild(link);
+				link.click();
+				window.URL.revokeObjectURL(link.href);
+				link.remove();
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
+		}
 	}
 };
 </script>
@@ -536,6 +564,22 @@ export default {
 			font-size: 12px;
 			span {
 				font-weight: bold;
+			}
+		}
+		.attach-files {
+			margin-bottom: 30px;
+			border-bottom: 1px solid #797979;
+			padding-bottom: 5px;
+			font-size: 15px;
+			color: #797979;
+			.item {
+				span {
+					color: #026dc1;
+				}
+				img {
+					margin-left: 10px;
+					cursor: pointer;
+				}
 			}
 		}
 	}
