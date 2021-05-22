@@ -12,7 +12,7 @@
 			</button>
 		</div>
 
-		<div class="tables d-flex" v-if="allApplications.length">
+		<div class="tables d-flex">
 			<table class="table fixed">
 				<thead>
 				<tr>
@@ -230,6 +230,25 @@
 						type="number"
 						:readonly="!permissions.some(i => i.code === 'proposedLoan')"
 					/>
+					<v-file-input
+						label="Загрузить файлы"
+						outlined
+						counter
+						multiple
+						show-size
+						truncate-length="15"
+						@change="onSelectFile"
+						prepend-icon=""
+					/>
+					<div class="attach-files" v-if="mode === 'edit' && application.attachments.length">
+						<span>Прикрепленные файлы:</span>
+						<div class="items">
+							<div class="item d-flex align-center" v-for="(file, i) in application.attachments" :key="i">
+								<span>{{file.fileName}}</span>
+								<img src="../../assets/icons/delete-icon.svg" @click="deleteAttachFile(file.id, i)">
+							</div>
+						</div>
+					</div>
 				</v-form>
 				<div class="btn-actions">
 					<button class="btn red-primary" @click="toggleAppModal">Отмена</button>
@@ -409,6 +428,7 @@ export default {
 			},
 			currentPage: 1,
 			totalPages: [],
+			formData: new FormData()
 		};
 	},
 	computed: {
@@ -509,6 +529,7 @@ export default {
 
 		async toggleAppModal(mode) {
 			this.mode = mode;
+			this.formData = new FormData();
 			if (mode === 'add') {
 				this.application = {customerDto: {}, statusType: 'QUEUE'};
 			}
@@ -541,16 +562,24 @@ export default {
 			});
 		},
 
+		onSelectFile(arrFiles) {
+			arrFiles.map((file) => this.formData.append('files', file));
+		},
+
 		async submitSave() {
 			if (this.$refs.appForm.validate()) {
 				try {
 					this.isLoading = true;
 					if (this.mode === 'add') {
-						await ApplicationService.create(this.application);
+						const res = await ApplicationService.create(this.application);
+						await this.sendAttachFiles(res.message);
 						this.getAllApplications();
 					}
 					if (this.mode === 'edit') {
 						await ApplicationService.update(this.application);
+						const newAttaches = await this.sendAttachFiles(this.application.id);
+						this.application.attachments = [...this.application.attachments, ...newAttaches];
+						this.onSelectApp({id: 0, checked: false});
 					}
 					this.$toast.success(this.mode === 'add' ? 'Успешно создано!' : 'Успешно обновлено!');
 					this.toggleAppModal();
@@ -559,6 +588,27 @@ export default {
 					this.$toast.error(err);
 					this.isLoading = false;
 				}
+			}
+		},
+
+		async sendAttachFiles(appId) {
+			if (this.formData.entries().next().value) {
+				try {
+					return await ApplicationService.attachFile(appId, this.formData);
+				} catch (err) {
+					this.$toast.error(err);
+				}
+			}
+		},
+
+		async deleteAttachFile(fileId, index) {
+			try {
+				this.isLoading = true;
+				await ApplicationService.deleteFile(fileId);
+				this.application.attachments.splice(index, 1);
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
 			}
 		},
 
@@ -591,6 +641,7 @@ export default {
 
 <style lang="scss">
 	.application-container {
+		margin-bottom: 50px;
 		.tables {
 			flex-wrap: wrap;
 			table {
@@ -663,6 +714,19 @@ export default {
 					color: #000;
 					margin: 0 12px;
 					font-size: 17px;
+				}
+			}
+		}
+		.attach-files {
+			margin-bottom: 30px;
+			border-bottom: 1px solid #797979;
+			padding-bottom: 5px;
+			font-size: 14px;
+			color: #797979;
+			.item {
+				img {
+					margin-left: 10px;
+					cursor: pointer;
 				}
 			}
 		}
