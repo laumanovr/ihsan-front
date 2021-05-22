@@ -1,4 +1,6 @@
-import {API_BASE_URL, sendGetRequest, sendPostRequest} from './api.service';
+import {API_BASE_URL, sendGetRequest, sendPostRequest, sendDeleteRequest} from './api.service';
+import {authHeader} from '../utils/authHeader';
+import axios from 'axios';
 
 export class ApplicationService {
 	constructor() {}
@@ -38,8 +40,19 @@ export class ApplicationService {
 		return sendPostRequest(url, body);
 	}
 
-	static makeApproved(body) {
-		const url = `${API_BASE_URL}/application/process`;
-		return sendPostRequest(url, body);
+	static attachFile(appId, formData) {
+		const url = `${API_BASE_URL}/application/${appId}/attachment`;
+		return sendPostRequest(url, formData);
+	}
+
+	static deleteFile(id) {
+		const url = `${API_BASE_URL}/application/attachment?id=${id}`;
+		return sendDeleteRequest(url, {});
+	}
+
+	static downloadFile(fileUrl) {
+		const url = `${API_BASE_URL}/file/downloadFile/${fileUrl}`;
+		const config = {method: 'GET', url, headers: {...authHeader()}, responseType: 'blob'};
+		return axios(config).then((res) => res.data);
 	}
 }
