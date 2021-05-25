@@ -324,6 +324,31 @@
 					:rules="requiredRule"
 				/>
 			</div>
+
+			<div class="payment-info">
+				<h3>Информация о платеже</h3>
+				<div class="total-paid">Всего заплачено: <span>{{alreadyPaid}}</span></div>
+				<div class="must-pay">Осталось заплатить: <span>{{application.totalPayment - alreadyPaid}}</span></div>
+				<div class="d-flex align-center" v-for="(item, i) in paymentObj.payments" :key="i">
+					<span class="counter">{{i + 1}}</span>
+					<div class="masked-input">
+						<span>Дата платежа</span>
+						<MaskedInput
+							class="masked-input"
+							mask="11.11.1111"
+							placeholder="ДД.ММ.ГГГГ"
+							autocomplete="new-password"
+							v-model="item.paymentDate"
+						/>
+					</div>
+					<v-text-field
+						outlined
+						label="Сумма платежа"
+						class="amount-input"
+						v-model="item.paymentAmount"
+					/>
+				</div>
+			</div>
 		</v-form>
 		<div class="d-flex justify-center">
 			<button class="btn green-primary" @click="submitSaveData">Сохранить</button>
@@ -358,7 +383,6 @@ export default {
 			infoDistrictList: [],
 			parentLocationId: '',
 			infoLocationId: '',
-
 			application: {
 				admissionFee: 0,
 				admissionFeePercentage: 0,
@@ -410,7 +434,12 @@ export default {
 				yearBuild: 0,
 				materialBuilt: ''
 			},
-			infoMode: 'create'
+			infoMode: 'create',
+			paymentObj: {
+				applicationId: 0,
+				payments: []
+			},
+			alreadyPaid: 0,
 		};
 	},
 	created() {
@@ -420,6 +449,7 @@ export default {
 		this.getProgramTypes();
 		this.getDepartments();
 		this.getAllUsers();
+		this.getPaymentInfo();
 	},
 	methods: {
 		async getApplicationById() {
@@ -447,7 +477,35 @@ export default {
 				}
 				this.appInformation.applicationId = this.application.id;
 				this.isLoading = false;
-				console.log(this.appInformation);
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		async getPaymentInfo() {
+			try {
+				let date = new Date();
+				date.setMonth(date.getMonth() - 1);
+				this.paymentObj.applicationId = this.$route.params.id;
+				const res = await ApplicationService.fetchPaymentInfo(this.$route.params.id);
+				if (Object.values(res).length) {
+					this.paymentObj.payments = res.map((item) => {
+						item.paymentDate = new Date(item.paymentDate).toLocaleDateString('ru');
+						if (item.paymentAmount) {
+							item.paymentStatus = 'PAID';
+							this.alreadyPaid += item.paymentAmount;
+						}
+						return item;
+					});
+					return;
+				}
+				this.paymentObj.payments = new Array(this.application.loanTerm).fill(0).map(() => {
+					return {
+						paymentDate: new Date(date.setMonth(date.getMonth() + 1)).toLocaleDateString('ru'),
+						paymentAmount: 0,
+						paymentStatus: 'DRAFT'
+					};
+				});
 			} catch (err) {
 				this.$toast.error(err);
 			}
@@ -510,6 +568,7 @@ export default {
 				try {
 					this.isLoading = true;
 					await ApplicationService.update(this.application);
+					await this.savePayment();
 					if (this.infoMode === 'create') {
 						await ApplicationService.createAppEstateInfo(this.appInformation);
 					} else {
@@ -521,6 +580,21 @@ export default {
 					this.$toast.error(err);
 					this.isLoading = false;
 				}
+			}
+		},
+
+		async savePayment() {
+			this.paymentObj.payments.map((item) => {
+				if (item.paymentAmount) {
+					item.paymentStatus = 'PAID';
+					this.alreadyPaid += item.paymentAmount;
+				}
+				return item;
+			});
+			try {
+				await ApplicationService.paymentCreate(this.paymentObj);
+			} catch (err) {
+				this.$toast.error(err);
 			}
 		},
 
@@ -555,7 +629,7 @@ export default {
 		.full-info {
 			padding: 15px;
 			border-radius: 5px;
-			max-width: 75%;
+			max-width: 97%;
 			margin: 10px auto;
 			background: #fff;
 		}
@@ -580,6 +654,19 @@ export default {
 					margin-left: 10px;
 					cursor: pointer;
 				}
+			}
+		}
+		.payment-info {
+			.counter {
+				margin-right: 15px;
+			}
+			.must-pay {
+				margin-bottom: 15px;
+			}
+			.amount-input {
+				max-width: 220px;
+				max-height: 50px;
+				margin-left: 20px;
 			}
 		}
 	}
