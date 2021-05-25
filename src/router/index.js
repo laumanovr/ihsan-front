@@ -104,4 +104,12 @@ const router = new VueRouter({
 	routes
 });
 
+router.beforeEach((to, from, next) => {
+	const loggedIn = window.localStorage.getItem('ihsanUser');
+	if (to.meta.requireAuth && !loggedIn) {
+		return next('/');
+	}
+	next();
+});
+
 export default router;
