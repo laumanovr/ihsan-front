@@ -55,4 +55,14 @@ export class ApplicationService {
 		const config = {method: 'GET', url, headers: {...authHeader()}, responseType: 'blob'};
 		return axios(config).then((res) => res.data);
 	}
+
+	static paymentCreate(body) {
+		const url = `${API_BASE_URL}/application/payment/create/batch`;
+		return sendPostRequest(url, body);
+	}
+
+	static fetchPaymentInfo(appId) {
+		const url = `${API_BASE_URL}/application/payment/application/${appId}`;
+		return sendGetRequest(url);
+	}
 }
