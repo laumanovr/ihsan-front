@@ -489,7 +489,7 @@ export default {
 				this.paymentObj.applicationId = this.$route.params.id;
 				const res = await ApplicationService.fetchPaymentInfo(this.$route.params.id);
 				if (Object.values(res).length) {
-					this.paymentObj.payments = res.map((item) => {
+					this.paymentObj.payments = res.sort((a, b) => new Date(a.paymentDate) - new Date(b.paymentDate)).map((item) => {
 						item.paymentDate = new Date(item.paymentDate).toLocaleDateString('ru');
 						if (item.paymentAmount) {
 							item.paymentStatus = 'PAID';
