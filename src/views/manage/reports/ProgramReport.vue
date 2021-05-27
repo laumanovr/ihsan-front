@@ -106,66 +106,66 @@
 </template>
 
 <script>
-	import {DepartmentService} from '../../../services/department.service';
-	import {ReportService} from '../../../services/report.service';
+import {DepartmentService} from '../../../services/department.service';
+import {ReportService} from '../../../services/report.service';
 
-	export default {
-		data() {
-			return {
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				statuses: {
-					'0': 'Очередь',
-					'1': 'Отказ',
-					'2': 'Выдано',
-					'3': 'Накопительный',
-				},
-				isLoading: false,
-				departments: [],
-				filterObj: {
-					departmentId: '',
-					startDate: '',
-					endDate: ''
-				},
-				pickerStart: '',
-				pickerEnd: '',
-				reportData: []
+export default {
+	data() {
+		return {
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			statuses: {
+				'0': 'Очередь',
+				'1': 'Отказ',
+				'2': 'Выдано',
+				'3': 'Накопительный',
+			},
+			isLoading: false,
+			departments: [],
+			filterObj: {
+				departmentId: '',
+				startDate: '',
+				endDate: ''
+			},
+			pickerStart: '',
+			pickerEnd: '',
+			reportData: []
+		};
+	},
+	created() {
+		this.getDepartments();
+	},
+	methods: {
+		async getDepartments() {
+			try {
+				this.departments = await DepartmentService.fetchDepartmentList();
+			} catch (err) {
+				this.$toast.error(err);
 			}
 		},
-		created() {
-			this.getDepartments();
+
+		onSelectDate(pickerField, inputField) {
+			this.filterObj[inputField] = new Date(this[pickerField]).toLocaleDateString('ru');
 		},
-		methods: {
-			async getDepartments() {
+
+		async generateReport() {
+			if (this.$refs.filterForm.validate()) {
 				try {
-					this.departments = await DepartmentService.fetchDepartmentList();
+					this.isLoading = true;
+					const res = await ReportService.generateByProgram(
+						this.filterObj.departmentId,
+						this.filterObj.startDate,
+						this.filterObj.endDate
+					);
+					this.reportData = res.sort((a, b) => a.status - b.status);
+					this.isLoading = false;
 				} catch (err) {
 					this.$toast.error(err);
-				}
-			},
-
-			onSelectDate(pickerField, inputField) {
-				this.filterObj[inputField] = new Date(this[pickerField]).toLocaleDateString('ru');
-			},
-
-			async generateReport() {
-				if (this.$refs.filterForm.validate()) {
-					try {
-						this.isLoading = true;
-						const res = await ReportService.generateByProgram(
-							this.filterObj.departmentId,
-							this.filterObj.startDate,
-							this.filterObj.endDate
-						);
-						this.reportData = res.sort((a, b) => a.status - b.status);
-						this.isLoading = false;
-					} catch (err) {
-						this.$toast.error(err);
-						this.isLoading = false;
-					}
+					this.isLoading = false;
 				}
 			}
 		}
 	}
+};
 </script>
 
 <style lang="scss">
