@@ -345,7 +345,7 @@
 						outlined
 						label="Сумма платежа"
 						class="amount-input"
-						v-model="item.paymentAmount"
+						v-model.number="item.paymentAmount"
 					/>
 				</div>
 			</div>
@@ -584,6 +584,7 @@ export default {
 		},
 
 		async savePayment() {
+			this.alreadyPaid = 0;
 			this.paymentObj.payments.map((item) => {
 				if (item.paymentAmount) {
 					item.paymentStatus = 'PAID';
