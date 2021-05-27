@@ -577,9 +577,16 @@ export default {
 					}
 					if (this.mode === 'edit') {
 						await ApplicationService.update(this.application);
-						const newAttaches = await this.sendAttachFiles(this.application.id);
-						this.application.attachments = [...this.application.attachments, ...newAttaches];
+						await this.sendAttachFiles(this.application.id);
 						this.onSelectApp({id: 0, checked: false});
+						const updatedApp = await ApplicationService.findById(this.application.id);
+						this.allApplications = this.allApplications.map((app) => {
+							if (app.id === this.application.id) {
+								app = updatedApp;
+								app.customerDto = updatedApp.customerResource;
+							}
+							return app;
+						});
 					}
 					this.$toast.success(this.mode === 'add' ? 'Успешно создано!' : 'Успешно обновлено!');
 					this.toggleAppModal();
@@ -594,7 +601,7 @@ export default {
 		async sendAttachFiles(appId) {
 			if (this.formData.entries().next().value) {
 				try {
-					return await ApplicationService.attachFile(appId, this.formData);
+					await ApplicationService.attachFile(appId, this.formData);
 				} catch (err) {
 					this.$toast.error(err);
 				}
