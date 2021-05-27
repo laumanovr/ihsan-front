@@ -115,7 +115,7 @@
 				/>
 				<v-text-field
 					outlined
-					label="Предпологаемый займ"
+					label="Предварит. стоимость(жилья/авто)"
 					v-model="application.proposedLoan"
 					:rules="requiredRule"
 				/>

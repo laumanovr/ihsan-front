@@ -46,7 +46,7 @@
 					<th>Телефон</th>
 					<th>Место работы</th>
 					<th>Доход</th>
-					<th>Предполагаемый займ</th>
+					<th>Предварит. стоимость(жилья/авто)</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -224,7 +224,7 @@
 					/>
 					<v-text-field
 						outlined
-						label="Предпологаемый займ"
+						label="Предварит. стоимость(жилья/авто)"
 						v-model="application.proposedLoan"
 						:rules="requiredRule"
 						type="number"
