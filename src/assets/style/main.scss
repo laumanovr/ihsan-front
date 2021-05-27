@@ -92,6 +92,16 @@ table.table {
   }
 }
 
+.back {
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.select-short {
+  max-width: 210px !important;
+  margin-right: 15px !important;
+}
+
 .v-text-field > .v-input__control > .v-input__slot {
   min-height: 50px !important;
 }
