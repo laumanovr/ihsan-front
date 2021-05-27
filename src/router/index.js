@@ -42,6 +42,30 @@ const routes = [
 				}
 			},
 			{
+				path: 'reports',
+				name: 'reports',
+				component: loadComponent('manage/reports/ReportList'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'program-report',
+				name: 'programReport',
+				component: loadComponent('manage/reports/ProgramReport'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'manager-report',
+				name: 'managerReport',
+				component: loadComponent('manage/reports/ManagerReport'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
 				path: 'approved-apps/:id/full-info',
 				name: 'appFullInfo',
 				component: loadComponent('manage/AppFullInfo')
