@@ -327,8 +327,8 @@
 
 			<div class="payment-info">
 				<h3>Информация о платеже</h3>
-				<div class="total-paid">Всего заплачено: <span>{{alreadyPaid}}</span></div>
-				<div class="must-pay">Осталось заплатить: <span>{{application.totalPayment - alreadyPaid}}</span></div>
+				<div class="total-paid">Всего паевый взнос: <span>{{alreadyPaid}}</span></div>
+				<div class="must-pay">Текущий остаток: <span>{{application.loanAmount - alreadyPaid}}</span></div>
 				<div class="d-flex align-center" v-for="(item, i) in paymentObj.payments" :key="i">
 					<span class="counter">{{i + 1}}</span>
 					<div class="masked-input">
@@ -456,6 +456,7 @@ export default {
 			try {
 				this.application = await ApplicationService.findById(this.$route.params.id);
 				this.application.customerDto = this.application.customerResource;
+				this.application.customerId = this.application.customerDto.id;
 				const res = await RegionService.findById(this.application.customerDto.regionId);
 				this.parentLocationId = res.parentId;
 				await this.getDistrict(this.parentLocationId);
