@@ -147,13 +147,15 @@
 					v-model="application.admissionFee"
 					:rules="requiredRule"
 					type="number"
+					@blur="countAdmissionPercent"
 				/>
 				<v-text-field
 					outlined
-					label="Вступит.взнос процент(4%, 5%, 7%)"
+					label="Вступит.взнос процент %"
 					v-model="application.admissionFeePercentage"
 					:rules="requiredRule"
 					type="number"
+					readonly
 				/>
 				<v-text-field
 					outlined
@@ -161,13 +163,15 @@
 					v-model="application.ownContribution"
 					:rules="requiredRule"
 					type="number"
+					@blur="countOwnContributionPercent"
 				/>
 				<v-text-field
 					outlined
-					label="Собствен.вклад процент(20%, 25%, 35%, 50%)"
+					label="Собствен.вклад процент %"
 					v-model="application.ownContributionPercentage"
 					:rules="requiredRule"
 					type="number"
+					readonly
 				/>
 				<v-text-field
 					outlined
@@ -191,6 +195,7 @@
 						placeholder="ДД.ММ.ГГГГ"
 						v-model="application.preliminaryDate"
 						autocomplete="new-password"
+						readonly
 					/>
 				</div>
 				<div class="masked-input">
@@ -363,6 +368,7 @@ import {DepartmentService} from '../../services/department.service';
 import {ApplicationService} from '../../services/application.service';
 import {UserService} from '../../services/user.service';
 import MaskedInput from 'vue-masked-input';
+import {format, parse} from 'date-fns';
 
 export default {
 	components: {
@@ -509,6 +515,32 @@ export default {
 				});
 			} catch (err) {
 				this.$toast.error(err);
+			}
+		},
+
+		countAdmissionPercent() {
+			if (this.application.admissionFee) {
+				const result = (this.application.admissionFee / this.application.proposedLoan) * 100;
+				this.application.admissionFeePercentage = result.toFixed(1);
+			}
+		},
+
+		countOwnContributionPercent() {
+			if (this.application.ownContribution) {
+				const result = (this.application.ownContribution / this.application.proposedLoan) * 100;
+				this.application.ownContributionPercentage = result.toFixed(1);
+				this.countPreliminaryDate();
+			}
+		},
+
+		countPreliminaryDate() {
+			let regDate = parse(this.application.registerDate, 'dd.MM.yyyy', new Date());
+			if (this.application.ownContributionPercentage >= 50) {
+				this.application.preliminaryDate = format(new Date(regDate.setDate(regDate.getDate() + 60)), 'dd.MM.yyyy');
+			} else if (this.application.ownContributionPercentage >= 35) {
+				this.application.preliminaryDate = format(new Date(regDate.setDate(regDate.getDate() + 90)), 'dd.MM.yyyy');
+			} else {
+				this.application.preliminaryDate = format(new Date(regDate.setDate(regDate.getDate() + 180)), 'dd.MM.yyyy');
 			}
 		},
 
