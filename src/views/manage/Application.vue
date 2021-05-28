@@ -325,6 +325,7 @@
 							placeholder="ДД.ММ.ГГГГ"
 							v-model="application.preliminaryDate"
 							autocomplete="new-password"
+							readonly
 						/>
 					</div>
 					<div class="masked-input">
@@ -375,6 +376,7 @@ import {DepartmentService} from '../../services/department.service';
 import {ApplicationService} from '../../services/application.service';
 import {UserService} from '../../services/user.service';
 import MaskedInput from 'vue-masked-input';
+import {format, parse} from 'date-fns';
 
 export default {
 	components: {
@@ -413,7 +415,7 @@ export default {
 				membershipFee: 0,
 				ownContribution: 0,
 				ownContributionPercentage: 0,
-				preliminaryDate: '',
+				preliminaryDate: null,
 				sharePayment: 0,
 				totalPayment: 0,
 			},
@@ -481,6 +483,18 @@ export default {
 			if (this.application.ownContribution) {
 				const result = (this.application.ownContribution / this.application.proposedLoan) * 100;
 				this.application.ownContributionPercentage = result.toFixed(1);
+				this.countPreliminaryDate();
+			}
+		},
+
+		countPreliminaryDate() {
+			let regDate = parse(this.application.registerDate, 'dd.MM.yyyy', new Date());
+			if (this.application.ownContributionPercentage >= 50) {
+				this.application.preliminaryDate = format(new Date(regDate.setDate(regDate.getDate() + 60)), 'dd.MM.yyyy');
+			} else if (this.application.ownContributionPercentage >= 35) {
+				this.application.preliminaryDate = format(new Date(regDate.setDate(regDate.getDate() + 90)), 'dd.MM.yyyy');
+			} else {
+				this.application.preliminaryDate = format(new Date(regDate.setDate(regDate.getDate() + 180)), 'dd.MM.yyyy');
 			}
 		},
 
