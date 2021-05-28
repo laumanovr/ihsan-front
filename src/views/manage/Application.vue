@@ -225,7 +225,7 @@
 					<v-text-field
 						outlined
 						label="Предварит. стоимость(жилья/авто)"
-						v-model="application.proposedLoan"
+						v-model.number="application.proposedLoan"
 						:rules="requiredRule"
 						type="number"
 						:readonly="!permissions.some(i => i.code === 'proposedLoan')"
@@ -274,16 +274,18 @@
 					<v-text-field
 						outlined
 						label="Вступительный взнос"
-						v-model="application.admissionFee"
+						v-model.number="application.admissionFee"
 						:rules="requiredRule"
 						type="number"
+						@blur="countAdmissionPercent"
 					/>
 					<v-text-field
 						outlined
-						label="Вступит.взнос процент(4%, 5%, 7%)"
+						label="Вступит.взнос процент %"
 						v-model="application.admissionFeePercentage"
 						:rules="requiredRule"
 						type="number"
+						readonly
 					/>
 					<v-text-field
 						outlined
@@ -291,13 +293,15 @@
 						v-model="application.ownContribution"
 						:rules="requiredRule"
 						type="number"
+						@blur="countOwnContributionPercent"
 					/>
 					<v-text-field
 						outlined
-						label="Собствен.вклад процент(20%, 25%, 35%, 50%)"
+						label="Собствен.вклад процент %"
 						v-model="application.ownContributionPercentage"
 						:rules="requiredRule"
 						type="number"
+						readonly
 					/>
 					<v-text-field
 						outlined
@@ -463,6 +467,20 @@ export default {
 				this.isLoading = false;
 			} catch (err) {
 				this.$toast.error(err);
+			}
+		},
+
+		countAdmissionPercent() {
+			if (this.application.admissionFee) {
+				const result = (this.application.admissionFee / this.application.proposedLoan) * 100;
+				this.application.admissionFeePercentage = result.toFixed(1);
+			}
+		},
+
+		countOwnContributionPercent() {
+			if (this.application.ownContribution) {
+				const result = (this.application.ownContribution / this.application.proposedLoan) * 100;
+				this.application.ownContributionPercentage = result.toFixed(1);
 			}
 		},
 
