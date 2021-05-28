@@ -655,6 +655,7 @@ export default {
 			if (isConfirm) {
 				this.application = this.selectedApp;
 				this.application.customerDto = this.selectedApp.customerResource;
+				this.application.customerId = this.application.customerDto.id;
 				this.$modal.show('approve-modal');
 				return;
 			}
