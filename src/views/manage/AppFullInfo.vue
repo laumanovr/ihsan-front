@@ -348,13 +348,16 @@
 						/>
 					</div>
 					<v-text-field
+						:class="{'paid': item.paymentStatus === 'PAID'}"
 						outlined
 						label="Сумма платежа"
 						class="amount-input"
 						v-model.number="item.paymentAmount"
 						readonly
 					/>
-					<button class="btn green-primary pay-btn" @click.prevent="togglePaymentModal(item)">Оплатить</button>
+					<button class="btn green-primary pay-btn" @click.prevent="togglePaymentModal(item)">
+						{{item.paymentStatus === 'PAID' ? 'Оплачено' : 'Оплатить'}}
+					</button>
 				</div>
 				<!--payment modal-->
 				<modal name="payment-modal" height="auto">
@@ -760,7 +763,7 @@ export default {
 				margin-left: 15px;
 			}
 			.paid {
-				background: green;
+				background: #baffba;
 			}
 		}
 	}
