@@ -134,87 +134,87 @@
 </template>
 
 <script>
-	import {ReportService} from '../../services/report.service';
-	import {DepartmentService} from '../../services/department.service';
+import {ReportService} from '../../services/report.service';
+import {DepartmentService} from '../../services/department.service';
 
-	export default {
-		data() {
-			return {
-				requiredRule: [(v) => !!v || 'Обязательное поле'],
-				isLoading: false,
-				departments: [],
-				filterObj: {
-					departmentId: '',
-					startDate: '',
-					endDate: ''
-				},
-				pickerStart: '',
-				pickerEnd: '',
+export default {
+	data() {
+		return {
+			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			isLoading: false,
+			departments: [],
+			filterObj: {
+				departmentId: '',
+				startDate: '',
+				endDate: ''
+			},
+			pickerStart: '',
+			pickerEnd: '',
 
-				analyticObj: {},
-				amountReceive: 0,
-				paymentStatistics: [],
-				managerStatistic: []
+			analyticObj: {},
+			amountReceive: 0,
+			paymentStatistics: [],
+			managerStatistic: []
+		};
+	},
+	created() {
+		this.getDepartments();
+	},
+	methods: {
+		onSelectDate(pickerField, inputField) {
+			this.filterObj[inputField] = new Date(this[pickerField]).toLocaleDateString('ru');
+		},
+
+		async getDepartments() {
+			try {
+				this.departments = await DepartmentService.fetchDepartmentList();
+			} catch (err) {
+				this.$toast.error(err);
 			}
 		},
-		created() {
-			this.getDepartments();
+
+		async generateAnalytics() {
+			try {
+				this.isLoading = true;
+				const res = await ReportService.fetchGeneralAnalytics(this.filterObj.departmentId, this.filterObj.startDate, this.filterObj.endDate);
+				this.analyticObj = res[0];
+				await this.fetchPaymentStatistic();
+				this.fetchManagerStatistic();
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
 		},
-		methods: {
-			onSelectDate(pickerField, inputField) {
-				this.filterObj[inputField] = new Date(this[pickerField]).toLocaleDateString('ru');
-			},
 
-			async getDepartments() {
-				try {
-					this.departments = await DepartmentService.fetchDepartmentList();
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
+		async fetchPaymentStatistic() {
+			try {
+				this.amountReceive = 0;
+				this.paymentStatistics = await ReportService.fetchPaymentStatistic(this.filterObj.departmentId, this.filterObj.startDate, this.filterObj.endDate);
+				this.paymentStatistics.forEach((i) => this.amountReceive += i.paymentAmount);
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
 
-			async generateAnalytics() {
-				try {
-					this.isLoading = true;
-					const res = await ReportService.fetchGeneralAnalytics(this.filterObj.departmentId, this.filterObj.startDate, this.filterObj.endDate);
-					this.analyticObj = res[0];
-					await this.fetchPaymentStatistic();
-					this.fetchManagerStatistic();
-				} catch (err) {
-					this.$toast.error(err);
-					this.isLoading = false;
-				}
-			},
-
-			async fetchPaymentStatistic() {
-				try {
-					this.amountReceive = 0;
-					this.paymentStatistics = await ReportService.fetchPaymentStatistic(this.filterObj.departmentId, this.filterObj.startDate, this.filterObj.endDate);
-					this.paymentStatistics.forEach((i) => this.amountReceive += i.paymentAmount);
-				} catch (err) {
-					this.$toast.error(err);
-				}
-			},
-
-			async fetchManagerStatistic() {
-				try {
-					this.managerStatistic = [];
-					const res = await ReportService.generateByManager(this.filterObj.departmentId, this.filterObj.startDate, this.filterObj.endDate);
-					Object.entries(res.reduce((obj, el) => {
-						obj[el.managerTitle] = [...obj[el.managerTitle] || [], el];
-						return obj;
-					}, {})).forEach((item) => {
-						let totalSum = 0;
-						item[1].map(i => totalSum += i.totalLoanAmount);
-						this.managerStatistic.push({managerTitle: item[0], totalDeal: item[1].length, totalSum: totalSum});
-					});
-					this.isLoading = false;
-				} catch (err) {
-					this.$toast.error(err);
-				}
+		async fetchManagerStatistic() {
+			try {
+				this.managerStatistic = [];
+				const res = await ReportService.generateByManager(this.filterObj.departmentId, this.filterObj.startDate, this.filterObj.endDate);
+				Object.entries(res.reduce((obj, el) => {
+					obj[el.managerTitle] = [...obj[el.managerTitle] || [], el];
+					return obj;
+				}, {})).forEach((item) => {
+					let totalSum = 0;
+					item[1].map(i => totalSum += i.totalLoanAmount);
+					this.managerStatistic.push({managerTitle: item[0], totalDeal: item[1].length, totalSum: totalSum});
+				});
+				this.isLoading = false;
+			} catch (err) {
+				this.$toast.error(err);
 			}
 		}
-	};
+	}
+};
 </script>
 
 <style lang="scss">
