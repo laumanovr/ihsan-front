@@ -344,6 +344,7 @@
 							placeholder="ДД.ММ.ГГГГ"
 							autocomplete="new-password"
 							v-model="item.paymentDate"
+							readonly
 						/>
 					</div>
 					<v-text-field
@@ -351,8 +352,39 @@
 						label="Сумма платежа"
 						class="amount-input"
 						v-model.number="item.paymentAmount"
+						readonly
 					/>
+					<button class="btn green-primary pay-btn" @click.prevent="togglePaymentModal(item)">Оплатить</button>
 				</div>
+				<!--payment modal-->
+				<modal name="payment-modal" height="auto">
+					<div class="modal-container">
+						<h3>Оплатить</h3>
+						<div class="d-flex align-center justify-center">
+							<div class="masked-input">
+								<span>Дата платежа</span>
+								<MaskedInput
+									class="masked-input"
+									mask="11.11.1111"
+									placeholder="ДД.ММ.ГГГГ"
+									autocomplete="new-password"
+									v-model="selectedPayObj.paymentDate"
+									readonly
+								/>
+							</div>
+							<v-text-field
+								outlined
+								label="Сумма платежа"
+								class="amount-input"
+								v-model.number="selectedPayObj.paymentAmount"
+							/>
+						</div>
+						<div class="btn-actions">
+							<button class="btn red-primary" @click.prevent="togglePaymentModal">Отмена</button>
+							<button class="btn green-primary" @click.prevent="savePayment">Оплатить</button>
+						</div>
+					</div>
+				</modal>
 			</div>
 		</v-form>
 		<div class="d-flex justify-center">
@@ -446,6 +478,10 @@ export default {
 				payments: []
 			},
 			alreadyPaid: 0,
+			selectedPayObj: {
+				paymentDate: '',
+				paymentAmount: 0
+			}
 		};
 	},
 	created() {
@@ -498,18 +534,27 @@ export default {
 				if (Object.values(res).length) {
 					this.paymentObj.payments = res.sort((a, b) => new Date(a.paymentDate) - new Date(b.paymentDate)).map((item) => {
 						item.paymentDate = new Date(item.paymentDate).toLocaleDateString('ru');
-						if (item.paymentAmount) {
+						if (item.paymentAmount && item.paymentStatus) {
 							item.paymentStatus = 'PAID';
 							this.alreadyPaid += item.paymentAmount;
+						} else {
+							item.paymentAmount = 0;
+							item.paymentStatus = 'DRAFT';
+						}
+						return item;
+					}).map((item) => {
+						if (!item.paymentAmount) {
+							item.paymentAmount = ((this.application.loanAmount - this.alreadyPaid) / this.application.loanTerm).toFixed(1);
 						}
 						return item;
 					});
+					this.isLoading = false;
 					return;
 				}
 				this.paymentObj.payments = new Array(this.application.loanTerm).fill(0).map(() => {
 					return {
 						paymentDate: new Date(date.setMonth(date.getMonth() + 1)).toLocaleDateString('ru'),
-						paymentAmount: 0,
+						paymentAmount: (this.application.loanAmount / this.application.loanTerm).toFixed(1),
 						paymentStatus: 'DRAFT'
 					};
 				});
@@ -601,7 +646,6 @@ export default {
 				try {
 					this.isLoading = true;
 					await ApplicationService.update(this.application);
-					await this.savePayment();
 					if (this.infoMode === 'create') {
 						await ApplicationService.createAppEstateInfo(this.appInformation);
 					} else {
@@ -616,17 +660,27 @@ export default {
 			}
 		},
 
+		togglePaymentModal(item) {
+			if (item) {
+				this.selectedPayObj = item;
+			}
+			this.$modal.toggle('payment-modal');
+		},
+
 		async savePayment() {
-			this.alreadyPaid = 0;
-			this.paymentObj.payments.map((item) => {
-				if (item.paymentAmount) {
-					item.paymentStatus = 'PAID';
-					this.alreadyPaid += item.paymentAmount;
-				}
-				return item;
-			});
 			try {
+				this.paymentObj.payments.map((item) => {
+					if (item.paymentDate === this.selectedPayObj.paymentDate) {
+						item.paymentAmount = this.selectedPayObj.paymentAmount;
+						item.paymentStatus = 'PAID';
+					}
+					return item;
+				});
+				this.isLoading = true;
+				this.alreadyPaid = 0;
 				await ApplicationService.paymentCreate(this.paymentObj);
+				this.getPaymentInfo();
+				this.togglePaymentModal();
 			} catch (err) {
 				this.$toast.error(err);
 			}
@@ -701,6 +755,12 @@ export default {
 				max-width: 220px;
 				max-height: 50px;
 				margin-left: 20px;
+			}
+			.pay-btn {
+				margin-left: 15px;
+			}
+			.paid {
+				background: green;
 			}
 		}
 	}
