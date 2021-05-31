@@ -12,4 +12,14 @@ export class ReportService {
 		const url = `${API_BASE_URL}/statistic/manager?departmentId=${departId}&startDate=${startDate}&endDate=${endDate}`;
 		return sendGetRequest(url);
 	}
+
+	static fetchGeneralAnalytics(departId, startDate, endDate) {
+		const url = `${API_BASE_URL}/statistic/general?departmentId=${departId}&startDate=${startDate}&endDate=${endDate}`;
+		return sendGetRequest(url);
+	}
+
+	static fetchPaymentStatistic(departId, startDate, endDate) {
+		const url = `${API_BASE_URL}/application/payment/clients?departmentId=${departId}&startDate=${startDate}&endDate=${endDate}`;
+		return sendGetRequest(url);
+	}
 }
