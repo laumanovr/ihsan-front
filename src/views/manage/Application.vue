@@ -3,6 +3,7 @@
 		<PreLoader v-if="isLoading"/>
 		<div class="head-title d-flex align-center justify-space-between">
 			<span>Заявки</span>
+			<div class="d-flex justify-space-between" style="width: 420px">
 			<button
 				class="btn blue-primary"
 				@click="toggleAppModal('add')"
@@ -10,6 +11,14 @@
 			>
 				Создать заявку
 			</button>
+			<button
+				class="btn blue-primary"
+				@click="toggleImportModal"
+				v-if="permissions.some(i => i.code === 'app-create/edit')"
+			>
+				Импорт
+			</button>
+			</div>
 		</div>
 
 		<div class="tables d-flex">
@@ -366,6 +375,52 @@
 				</div>
 			</div>
 		</modal>
+
+		<!--IMPORT MODAL-->
+		<modal name="import-modal" height="auto">
+			<div class="modal-container">
+				<h3>Импорт заявок</h3>
+				<v-form ref="importForm">
+					<v-select
+						outlined
+						label="Филиал"
+						:items="departmentList"
+						item-text="title"
+						item-value="id"
+						v-model="importObj.departmentId"
+						:rules="requiredRule"
+					/>
+					<v-select
+						outlined
+						label="Менеджер"
+						:items="allUsers"
+						item-text="fullName"
+						item-value="id"
+						v-model="importObj.managerId"
+						:rules="requiredRule"
+					/>
+					<v-select
+						outlined
+						label="Статус"
+						:items="statuses"
+						item-text="title"
+						item-value="value"
+						v-model="importObj.statusType"
+						:rules="requiredRule"
+					/>
+					<v-file-input
+						outlined
+						prepend-icon=""
+						label="Выбрать файл"
+						v-model="importObj.file"
+					/>
+				</v-form>
+				<div class="btn-actions">
+					<button class="btn red-primary" @click="toggleImportModal">Отмена</button>
+					<button class="btn green-primary" @click="submitImport">Загрузить</button>
+				</div>
+			</div>
+		</modal>
 	</div>
 </template>
 
@@ -386,7 +441,11 @@ export default {
 		return {
 			requiredRule: [(v) => !!v || 'Обязательное поле'],
 			isLoading: false,
-			statuses: [{title: 'Выдан', value: 'ISSUED'}, {title: 'Накопительный', value: 'SAVING'}],
+			statuses: [
+				{title: 'Очередь', value: 'QUEUE'},
+				{title: 'Выдан', value: 'ISSUED'},
+				{title: 'Накопительный', value: 'SAVING'}
+				],
 			application: {
 				customerDto: {
 					address: '',
@@ -434,7 +493,13 @@ export default {
 			},
 			currentPage: 1,
 			totalPages: [],
-			formData: new FormData()
+			formData: new FormData(),
+			importObj: {
+				departmentId: '',
+				managerId: '',
+				statusType: '',
+				file: {}
+			}
 		};
 	},
 	computed: {
@@ -673,6 +738,27 @@ export default {
 			} catch (err) {
 				this.$toast.error(err);
 				this.isLoading = false;
+			}
+		},
+
+		toggleImportModal() {
+			this.$modal.toggle('import-modal');
+		},
+
+		async submitImport() {
+			let formData = new FormData();
+			if (this.$refs.importForm.validate()) {
+				try {
+					Object.entries(this.importObj).map((item) => formData.append(item[0], item[1]));
+					this.isLoading = true;
+					await ApplicationService.importApplication(formData);
+					this.toggleImportModal();
+					this.getAllApplications();
+					this.$toast.success('Успешно загружено!');
+				} catch (err) {
+					this.$toast.error(err);
+					this.isLoading = false;
+				}
 			}
 		}
 	}
