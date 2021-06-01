@@ -65,4 +65,9 @@ export class ApplicationService {
 		const url = `${API_BASE_URL}/application/payment/application/${appId}`;
 		return sendGetRequest(url);
 	}
+
+	static importApplication(body) {
+		const url = `${API_BASE_URL}/file/application/import`;
+		return sendPostRequest(url, body);
+	}
 }
