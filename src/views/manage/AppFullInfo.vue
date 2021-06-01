@@ -528,44 +528,6 @@ export default {
 			}
 		},
 
-		async getPaymentInfo() {
-			try {
-				let date = new Date();
-				date.setMonth(date.getMonth() - 1);
-				this.paymentObj.applicationId = this.$route.params.id;
-				const res = await ApplicationService.fetchPaymentInfo(this.$route.params.id);
-				if (Object.values(res).length) {
-					this.paymentObj.payments = res.sort((a, b) => new Date(a.paymentDate) - new Date(b.paymentDate)).map((item) => {
-						item.paymentDate = new Date(item.paymentDate).toLocaleDateString('ru');
-						if (item.paymentAmount && item.paymentStatus) {
-							item.paymentStatus = 'PAID';
-							this.alreadyPaid += item.paymentAmount;
-						} else {
-							item.paymentAmount = 0;
-							item.paymentStatus = 'DRAFT';
-						}
-						return item;
-					}).map((item) => {
-						if (!item.paymentAmount) {
-							item.paymentAmount = ((this.application.loanAmount - this.alreadyPaid) / this.application.loanTerm).toFixed(1);
-						}
-						return item;
-					});
-					this.isLoading = false;
-					return;
-				}
-				this.paymentObj.payments = new Array(this.application.loanTerm).fill(0).map(() => {
-					return {
-						paymentDate: new Date(date.setMonth(date.getMonth() + 1)).toLocaleDateString('ru'),
-						paymentAmount: (this.application.loanAmount / this.application.loanTerm).toFixed(1),
-						paymentStatus: 'DRAFT'
-					};
-				});
-			} catch (err) {
-				this.$toast.error(err);
-			}
-		},
-
 		countAdmissionPercent() {
 			if (this.application.admissionFee) {
 				const result = (this.application.admissionFee / this.application.proposedLoan) * 100;
@@ -663,6 +625,44 @@ export default {
 			}
 		},
 
+		async getPaymentInfo() {
+			try {
+				let date = new Date();
+				date.setMonth(date.getMonth() - 1);
+				this.paymentObj.applicationId = this.$route.params.id;
+				const res = await ApplicationService.fetchPaymentInfo(this.$route.params.id);
+				if (Object.values(res).length) {
+					this.paymentObj.payments = res.sort((a, b) => new Date(a.paymentDate) - new Date(b.paymentDate)).map((item) => {
+						item.paymentDate = new Date(item.paymentDate).toLocaleDateString('ru');
+						if (item.paymentAmount && item.paymentStatus) {
+							item.paymentStatus = 'PAID';
+							this.alreadyPaid += item.paymentAmount;
+						} else {
+							item.paymentAmount = 0;
+							item.paymentStatus = 'DRAFT';
+						}
+						return item;
+					}).map((item) => {
+						if (!item.paymentAmount) {
+							item.paymentAmount = ((this.application.loanAmount - this.alreadyPaid) / this.application.loanTerm).toFixed(1);
+						}
+						return item;
+					});
+					this.isLoading = false;
+					return;
+				}
+				this.paymentObj.payments = new Array(this.application.loanTerm).fill(0).map(() => {
+					return {
+						paymentDate: new Date(date.setMonth(date.getMonth() + 1)).toLocaleDateString('ru'),
+						paymentAmount: (this.application.loanAmount / this.application.loanTerm).toFixed(1),
+						paymentStatus: 'DRAFT'
+					};
+				});
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
 		togglePaymentModal(item) {
 			if (item) {
 				this.selectedPayObj = item;
@@ -671,6 +671,10 @@ export default {
 		},
 
 		async savePayment() {
+			if (this.selectedPayObj.paymentAmount > (this.application.loanAmount - this.alreadyPaid)) {
+				this.$toast.info('Сумма платежа не может быть больше чем текущий остаток!');
+				return;
+			}
 			try {
 				this.paymentObj.payments.map((item) => {
 					if (item.paymentDate === this.selectedPayObj.paymentDate) {
