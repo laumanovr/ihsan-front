@@ -763,8 +763,12 @@ export default {
 					this.isLoading = true;
 					await ApplicationService.importApplication(formData);
 					this.toggleImportModal();
-					this.getAllApplications();
 					this.$toast.success('Успешно загружено!');
+					if (this.importObj.statusType === 'ISSUED') {
+						this.$router.push({name: 'approvedApps'});
+					} else {
+						this.getAllApplications();
+					}
 				} catch (err) {
 					this.$toast.error(err);
 					this.isLoading = false;
