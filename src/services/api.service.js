@@ -28,6 +28,10 @@ const sendRequest = async (method, url, data) => {
 		const res = await axios(config);
 		return res.data;
 	} catch (err) {
+		if (err.response.status === 403) {
+			window.location.href = '/';
+			return;
+		}
 		return Promise.reject(err);
 	}
 };

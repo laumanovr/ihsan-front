@@ -293,7 +293,6 @@
 						label="Вступит.взнос процент %"
 						v-model="application.admissionFeePercentage"
 						:rules="requiredRule"
-						type="number"
 						readonly
 					/>
 					<v-text-field
@@ -309,7 +308,6 @@
 						label="Собствен.вклад процент %"
 						v-model="application.ownContributionPercentage"
 						:rules="requiredRule"
-						type="number"
 						readonly
 					/>
 					<v-text-field
