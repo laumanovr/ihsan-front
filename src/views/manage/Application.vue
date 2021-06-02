@@ -274,7 +274,7 @@
 					<v-select
 						outlined
 						label="Статус"
-						:items="statuses"
+						:items="statuses.slice(1)"
 						item-text="title"
 						item-value="value"
 						v-model="application.statusType"
