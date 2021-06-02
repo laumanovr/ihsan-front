@@ -1,9 +1,18 @@
 <template>
 	<div class="app-additional-info">
 		<PreLoader v-if="isLoading"/>
-		<div class="head-title d-flex align-center">
-			<img src="../../assets/icons/arrow-dark.svg" @click="$router.go(-1)" class="back">
-			<span>Полная информация по заявке</span>
+		<div class="head-title d-flex align-center justify-space-between">
+			<div class="d-flex align-center">
+				<img src="../../assets/icons/arrow-dark.svg" @click="$router.go(-1)" class="back">
+				<span>Полная информация по заявке</span>
+			</div>
+			<button
+				class="btn blue-primary edit-mode-btn"
+				:class="{'selected': !isDisabled}"
+				@click="isDisabled = false"
+			>
+				{{isDisabled ? 'Режим редактирования' : 'Можете редактировать'}}
+			</button>
 		</div>
 
 		<v-form class="full-info" ref="fullInfoForm">
@@ -18,6 +27,7 @@
 						placeholder="ДД.ММ.ГГГГ"
 						v-model="application.registerDate"
 						autocomplete="new-password"
+						:readonly="isDisabled"
 					/>
 				</div>
 				<v-select
@@ -28,6 +38,7 @@
 					item-value="id"
 					v-model="application.departmentId"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-select
 					outlined
@@ -37,24 +48,28 @@
 					item-value="id"
 					v-model="application.programTypeId"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Имя клиента"
 					v-model="application.customerDto.firstName"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Фамилия клиента"
 					v-model="application.customerDto.lastName"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Отчество клиента"
 					v-model="application.customerDto.middleName"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-select
 					outlined
@@ -64,12 +79,14 @@
 					item-value="id"
 					v-model="application.userId"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Пин клиента"
 					v-model="application.customerDto.pin"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-select
 					outlined
@@ -79,6 +96,7 @@
 					item-value="id"
 					v-model="parentLocationId"
 					@change="getDistrict"
+					:readonly="isDisabled"
 				/>
 				<v-select
 					outlined
@@ -88,36 +106,42 @@
 					item-value="id"
 					v-model="application.customerDto.regionId"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Адрес проживания"
 					v-model="application.customerDto.address"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Телефон"
 					v-model="application.customerDto.phoneNumber"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Место работы"
 					v-model="application.customerDto.jobPlace"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Доход"
 					v-model="application.monthlyIncome"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Предварит. стоимость(жилья/авто)"
 					v-model="application.proposedLoan"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<div class="attach-files" v-if="application.attachments.length">
 					<span>Прикрепленные файлы:</span>
@@ -140,6 +164,7 @@
 					item-value="value"
 					v-model="application.statusType"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
@@ -148,6 +173,7 @@
 					:rules="requiredRule"
 					type="number"
 					@blur="countAdmissionPercent"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
@@ -164,6 +190,7 @@
 					:rules="requiredRule"
 					type="number"
 					@blur="countOwnContributionPercent"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
@@ -179,6 +206,7 @@
 					v-model="application.loanAmount"
 					:rules="requiredRule"
 					type="number"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
@@ -186,6 +214,7 @@
 					v-model="application.loanTerm"
 					:rules="requiredRule"
 					type="number"
+					:readonly="isDisabled"
 				/>
 				<div class="masked-input">
 					<span>Предварительная дата</span>
@@ -206,6 +235,7 @@
 						placeholder="ДД.ММ.ГГГГ"
 						v-model="application.dateOfIssue"
 						autocomplete="new-password"
+						:readonly="isDisabled"
 					/>
 				</div>
 				<v-text-field
@@ -214,6 +244,7 @@
 					v-model="application.membershipFee"
 					:rules="requiredRule"
 					type="number"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
@@ -221,6 +252,7 @@
 					v-model="application.sharePayment"
 					:rules="requiredRule"
 					type="number"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
@@ -228,6 +260,19 @@
 					v-model="application.totalPayment"
 					:rules="requiredRule"
 					type="number"
+					:readonly="isDisabled"
+				/>
+				<v-text-field
+					outlined
+					label="Страховка"
+					v-model="application.insurance"
+					:readonly="isDisabled"
+				/>
+				<v-text-field
+					outlined
+					label="Юр.услуги"
+					v-model="application.legalServices"
+					:readonly="isDisabled"
 				/>
 			</div>
 
@@ -238,6 +283,7 @@
 					label="Адрес жилья"
 					v-model="appInformation.accommodationAddress"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-select
 					outlined
@@ -247,68 +293,80 @@
 					item-value="value"
 					v-model="appInformation.housingType"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Идентиф. код жилья (гос.номер)"
 					v-model="appInformation.identificationCode"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Комнаты"
 					v-model="appInformation.room"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Год постройки"
 					v-model="appInformation.yearBuild"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Общая площадь (жилья/объем авто)"
 					v-model="appInformation.totalArea"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Стоимость жилья"
 					v-model="appInformation.houseCost"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Платеж/Доход (PTI)"
 					v-model="appInformation.pti"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Займ/стоимость жилья (LTV)"
 					v-model="appInformation.ltv"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Цена за 1 м² (Сом)"
 					v-model="appInformation.unitPrice"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Цена за 1 м² (Долл.США)"
 					v-model="appInformation.unitPriceDollar"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Код района недвижимости"
 					v-model="appInformation.districtCode"
+					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Материал строения цвет"
 					v-model="appInformation.materialBuilt"
+					:readonly="isDisabled"
 				/>
 				<v-select
 					outlined
@@ -318,6 +376,7 @@
 					item-value="id"
 					v-model="infoLocationId"
 					@change="getInfoDistrict"
+					:readonly="isDisabled"
 				/>
 				<v-select
 					outlined
@@ -327,7 +386,11 @@
 					item-value="id"
 					v-model="appInformation.locationId"
 					:rules="requiredRule"
+					:readonly="isDisabled"
 				/>
+			</div>
+			<div class="d-flex justify-center save-btn" v-if="!isDisabled">
+				<button class="btn green-primary" @click.prevent="submitSaveData">Сохранить</button>
 			</div>
 
 			<div class="payment-info">
@@ -355,8 +418,8 @@
 						v-model.number="item.paymentAmount"
 						readonly
 					/>
-					<button class="btn green-primary pay-btn" @click.prevent="togglePaymentModal(item)">
-						{{item.paymentStatus === 'PAID' ? 'Оплачено' : 'Оплатить'}}
+					<button class="btn blue-primary pay-btn" @click.prevent="togglePaymentModal(item)">
+						{{item.paymentStatus === 'PAID' ? 'Изменить' : 'Оплатить'}}
 					</button>
 				</div>
 				<!--payment modal-->
@@ -390,9 +453,6 @@
 				</modal>
 			</div>
 		</v-form>
-		<div class="d-flex justify-center">
-			<button class="btn green-primary" @click="submitSaveData">Сохранить</button>
-		</div>
 	</div>
 </template>
 
@@ -484,7 +544,8 @@ export default {
 			selectedPayObj: {
 				paymentDate: '',
 				paymentAmount: 0
-			}
+			},
+			isDisabled: true
 		};
 	},
 	created() {
@@ -517,9 +578,11 @@ export default {
 				if (Object.values(resp).length) {
 					this.infoMode = 'edit';
 					this.appInformation = Object.assign({}, resp[0], {materialBuilt: resp[0].materialBuild});
-					const region = await RegionService.findById(this.appInformation.locationId);
-					this.infoLocationId = region.parentId;
-					await this.getInfoDistrict(this.infoLocationId);
+					if (this.appInformation.locationId) {
+						const region = await RegionService.findById(this.appInformation.locationId);
+						this.infoLocationId = region.parentId;
+						await this.getInfoDistrict(this.infoLocationId);
+					}
 				}
 				this.appInformation.applicationId = this.application.id;
 				this.isLoading = false;
@@ -721,12 +784,29 @@ export default {
 			margin-right: 15px;
 			cursor: pointer;
 		}
+		.edit-mode-btn {
+			margin-right: 15px;
+			outline: none;
+			&.selected {
+				opacity: 0.5;
+				pointer-events: none;
+			}
+		}
 		.full-info {
 			padding: 15px;
 			border-radius: 5px;
 			max-width: 97%;
 			margin: 10px auto;
 			background: #fff;
+			.save-btn {
+				border-bottom: 1px solid #9e9e9e;
+				margin: 10px 0 25px;
+				padding-bottom: 12px;
+				.btn {
+					height: 55px;
+					max-width: 250px;
+				}
+			}
 		}
 		.created-by {
 			text-align: right;
