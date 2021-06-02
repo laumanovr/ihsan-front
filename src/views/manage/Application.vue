@@ -455,7 +455,7 @@ export default {
 				{title: 'Очередь', value: 'QUEUE'},
 				{title: 'Выдан', value: 'ISSUED'},
 				{title: 'Накопительный', value: 'SAVING'}
-				],
+			],
 			application: {
 				customerDto: {
 					address: '',
