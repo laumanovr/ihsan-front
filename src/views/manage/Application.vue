@@ -368,6 +368,16 @@
 						:rules="requiredRule"
 						type="number"
 					/>
+					<v-text-field
+						outlined
+						label="Страховка"
+						v-model="application.insurance"
+					/>
+					<v-text-field
+						outlined
+						label="Юр.услуги"
+						v-model="application.legalServices"
+					/>
 				</v-form>
 				<div class="btn-actions">
 					<button class="btn red-primary" @click="$modal.hide('approve-modal')">Отмена</button>
