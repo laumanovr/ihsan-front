@@ -17,7 +17,7 @@
 
 		<v-form class="full-info" ref="fullInfoForm">
 			<div class="client-info">
-				<div class="created-by">Создан: <span>{{application.createdBy}}</span></div>
+				<div class="created-by">Создан: <span>{{application.createdBy.replace('null', '')}}</span></div>
 				<h3>Информация о заемщике</h3>
 				<div class="masked-input">
 					<span>Дата регистрации</span>
@@ -514,7 +514,8 @@ export default {
 				sharePayment: 0,
 				totalPayment: 0,
 				userId: 0,
-				statusType: 'ISSUED'
+				statusType: 'ISSUED',
+				createdBy: ''
 			},
 			appInformation: {
 				applicationId: 0,
