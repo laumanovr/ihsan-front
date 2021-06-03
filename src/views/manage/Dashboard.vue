@@ -77,11 +77,11 @@
 			</div>
 			<div class="card">
 				<div class="label">Сумма Выдачи</div>
-				<div class="count">{{analyticObj.totalSum}} с</div>
+				<div class="count">{{formatSum(analyticObj.totalSum)}} с</div>
 			</div>
 			<div class="card">
 				<div class="label">Поступит</div>
-				<div class="count">{{amountReceive}} с</div>
+				<div class="count">{{formatSum(amountReceive)}} с</div>
 			</div>
 		</div>
 
@@ -101,8 +101,8 @@
 					<tr v-for="(client, i) in paymentStatistics" :key="client.id">
 						<td class="num">{{i + 1}}</td>
 						<td>{{client.accountantTitle}}</td>
-						<td>{{client.paymentDate}}</td>
-						<td>{{client.paymentAmount}} с</td>
+						<td>{{formatDate(client.paymentDate)}}</td>
+						<td>{{formatSum(client.paymentAmount)}} с</td>
 					</tr>
 					</tbody>
 				</table>
@@ -123,7 +123,7 @@
 						<td class="num">{{i + 1}}</td>
 						<td>{{item.managerTitle}}</td>
 						<td>{{item.totalDeal}}</td>
-						<td>{{item.totalSum}} с</td>
+						<td>{{formatSum(item.totalSum)}} с</td>
 					</tr>
 					</tbody>
 				</table>
@@ -136,6 +136,7 @@
 <script>
 import {ReportService} from '../../services/report.service';
 import {DepartmentService} from '../../services/department.service';
+import {format} from 'date-fns';
 
 export default {
 	data() {
@@ -146,11 +147,10 @@ export default {
 			filterObj: {
 				departmentId: '',
 				startDate: '',
-				endDate: ''
+				endDate: format(new Date(), 'dd.MM.yyyy')
 			},
 			pickerStart: '',
-			pickerEnd: '',
-
+			pickerEnd: format(new Date(), 'yyyy-MM-dd'),
 			analyticObj: {},
 			amountReceive: 0,
 			paymentStatistics: [],
@@ -159,10 +159,21 @@ export default {
 	},
 	created() {
 		this.getDepartments();
+		const date = new Date();
+		this.pickerStart = format(date.setMonth(date.getMonth() - 3), 'yyyy-MM-dd');
+		this.filterObj.startDate = new Date(this.pickerStart).toLocaleDateString('ru');
 	},
 	methods: {
 		onSelectDate(pickerField, inputField) {
 			this.filterObj[inputField] = new Date(this[pickerField]).toLocaleDateString('ru');
+		},
+
+		formatSum(sum) {
+			return sum ? Number(sum).toLocaleString('en-EN') : 0;
+		},
+
+		formatDate(date) {
+			return format(new Date(date), 'dd.MM.yyyy');
 		},
 
 		async getDepartments() {
