@@ -171,7 +171,6 @@
 					label="Вступительный взнос"
 					v-model="application.admissionFee"
 					:rules="requiredRule"
-					type="number"
 					@blur="countAdmissionPercent"
 					:readonly="isDisabled"
 				/>
@@ -187,7 +186,6 @@
 					label="Собственный вклад"
 					v-model="application.ownContribution"
 					:rules="requiredRule"
-					type="number"
 					@blur="countOwnContributionPercent"
 					:readonly="isDisabled"
 				/>
