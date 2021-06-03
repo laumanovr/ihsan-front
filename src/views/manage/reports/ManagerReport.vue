@@ -93,14 +93,14 @@
 				<td>{{report.managerTitle}}</td>
 				<td>{{statuses[report.status]}}</td>
 				<td>{{report.programTitle}}</td>
-				<td>{{report.totalProposedLoan}}</td>
-				<td>{{report.totalLoanAmount}}</td>
-				<td>{{report.totalAdmissionFee}}</td>
-				<td>{{report.totalOwnContribution}}</td>
-				<td>{{report.totalMembershipFee}}</td>
-				<td>{{report.totalSharePayment}}</td>
-				<td>{{report.totalPayment}}</td>
-				<td>{{report.totalHouseCost}}</td>
+				<td>{{formatSum(report.totalProposedLoan)}}</td>
+				<td>{{formatSum(report.totalLoanAmount)}}</td>
+				<td>{{formatSum(report.totalAdmissionFee)}}</td>
+				<td>{{formatSum(report.totalOwnContribution)}}</td>
+				<td>{{formatSum(report.totalMembershipFee)}}</td>
+				<td>{{formatSum(report.totalSharePayment)}}</td>
+				<td>{{formatSum(report.totalPayment)}}</td>
+				<td>{{formatSum(report.totalHouseCost)}}</td>
 			</tr>
 			</tbody>
 		</table>
@@ -110,6 +110,7 @@
 <script>
 import {DepartmentService} from '../../../services/department.service';
 import {ReportService} from '../../../services/report.service';
+import {format} from 'date-fns';
 
 export default {
 	data() {
@@ -126,15 +127,18 @@ export default {
 			filterObj: {
 				departmentId: '',
 				startDate: '',
-				endDate: ''
+				endDate: format(new Date(), 'dd.MM.yyyy')
 			},
 			pickerStart: '',
-			pickerEnd: '',
+			pickerEnd: format(new Date(), 'yyyy-MM-dd'),
 			reportData: []
 		};
 	},
 	created() {
 		this.getDepartments();
+		const date = new Date();
+		this.pickerStart = format(date.setMonth(date.getMonth() - 3), 'yyyy-MM-dd');
+		this.filterObj.startDate = new Date(this.pickerStart).toLocaleDateString('ru');
 	},
 	methods: {
 		async getDepartments() {
@@ -147,6 +151,10 @@ export default {
 
 		onSelectDate(pickerField, inputField) {
 			this.filterObj[inputField] = new Date(this[pickerField]).toLocaleDateString('ru');
+		},
+
+		formatSum(sum) {
+			return sum ? Number(sum).toLocaleString('en-EN') : 0;
 		},
 
 		async generateReport() {
