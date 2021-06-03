@@ -395,19 +395,15 @@
 				<h3>Информация о платеже</h3>
 				<div class="total-paid">Всего паевый взнос: <span>{{formatSum(alreadyPaid)}}</span></div>
 				<div class="must-pay">Текущий остаток: <span>{{formatSum(application.loanAmount - alreadyPaid)}}</span></div>
-				<div class="d-flex align-center" v-for="(item, i) in paymentObj.payments" :key="i">
+				<div class="d-flex align-center pay-block" v-for="(item, i) in paymentObj.payments" :key="i">
 					<span class="counter">{{i + 1}}</span>
-					<div class="masked-input">
-						<span>Дата платежа</span>
-						<MaskedInput
-							class="masked-input"
-							mask="11.11.1111"
-							placeholder="ДД.ММ.ГГГГ"
-							autocomplete="new-password"
-							v-model="item.paymentDate"
-							readonly
-						/>
-					</div>
+					<v-text-field
+						outlined
+						label="Дата платежа"
+						class="amount-input"
+						v-model="item.paymentDate"
+						readonly
+					/>
 					<v-text-field
 						:class="{'paid': item.paymentStatus === 'PAID'}"
 						outlined
@@ -554,7 +550,6 @@ export default {
 		this.getProgramTypes();
 		this.getDepartments();
 		this.getAllUsers();
-		this.getPaymentInfo();
 	},
 	methods: {
 		async getApplicationById() {
@@ -566,6 +561,7 @@ export default {
 				this.parentLocationId = res.parentId;
 				await this.getDistrict(this.parentLocationId);
 				await this.getAppEstateInformation();
+				this.getPaymentInfo();
 			} catch (err) {
 				this.$toast.error(err);
 			}
@@ -693,8 +689,7 @@ export default {
 
 		async getPaymentInfo() {
 			try {
-				let date = new Date();
-				date.setMonth(date.getMonth() - 1);
+				const dateOfIssue = parse(this.application.dateOfIssue, 'dd.MM.yyyy', new Date());
 				this.paymentObj.applicationId = this.$route.params.id;
 				const res = await ApplicationService.fetchPaymentInfo(this.$route.params.id);
 				if (Object.values(res).length) {
@@ -719,7 +714,7 @@ export default {
 				}
 				this.paymentObj.payments = new Array(this.application.loanTerm).fill(0).map(() => {
 					return {
-						paymentDate: new Date(date.setMonth(date.getMonth() + 1)).toLocaleDateString('ru'),
+						paymentDate: new Date(dateOfIssue.setMonth(dateOfIssue.getMonth() + 1)).toLocaleDateString('ru'),
 						paymentAmount: (this.application.loanAmount / this.application.loanTerm).toFixed(1),
 						paymentStatus: 'DRAFT'
 					};
@@ -851,6 +846,9 @@ export default {
 			}
 			.paid {
 				background: #baffba;
+			}
+			.pay-block {
+				margin-bottom: 20px;
 			}
 		}
 	}
