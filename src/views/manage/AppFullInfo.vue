@@ -393,8 +393,8 @@
 
 			<div class="payment-info">
 				<h3>Информация о платеже</h3>
-				<div class="total-paid">Всего паевый взнос: <span>{{alreadyPaid}}</span></div>
-				<div class="must-pay">Текущий остаток: <span>{{application.loanAmount - alreadyPaid}}</span></div>
+				<div class="total-paid">Всего паевый взнос: <span>{{formatSum(alreadyPaid)}}</span></div>
+				<div class="must-pay">Текущий остаток: <span>{{formatSum(application.loanAmount - alreadyPaid)}}</span></div>
 				<div class="d-flex align-center" v-for="(item, i) in paymentObj.payments" :key="i">
 					<span class="counter">{{i + 1}}</span>
 					<div class="masked-input">
@@ -587,6 +587,10 @@ export default {
 			} catch (err) {
 				this.$toast.error(err);
 			}
+		},
+
+		formatSum(sum) {
+			return sum ? Number(sum).toLocaleString('en-EN') : 0;
 		},
 
 		countAdmissionPercent() {
