@@ -845,7 +845,7 @@ export default {
 				margin-left: 15px;
 			}
 			.paid {
-				background: #baffba;
+				background: #00ff0a38;
 			}
 			.pay-block {
 				margin-bottom: 20px;
