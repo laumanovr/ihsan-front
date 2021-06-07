@@ -17,4 +17,9 @@ export class RegionService {
 		const url = `${API_BASE_URL}/location/${id}`;
 		return sendGetRequest(url);
 	}
+
+	static fetchAllLocationList() {
+		const url = `${API_BASE_URL}/location/list`;
+		return sendGetRequest(url);
+	}
 }
