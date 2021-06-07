@@ -384,6 +384,12 @@
 					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
+				<v-text-field
+					outlined
+					label="Примечание"
+					v-model="appInformation.note"
+					:readonly="isDisabled"
+				/>
 			</div>
 			<div class="d-flex justify-center save-btn" v-if="!isDisabled">
 				<button class="btn green-primary" @click.prevent="submitSaveData">Сохранить</button>
@@ -527,7 +533,8 @@ export default {
 				unitPrice: 0,
 				unitPriceDollar: 0,
 				yearBuild: 0,
-				materialBuilt: ''
+				materialBuilt: '',
+				note: ''
 			},
 			infoMode: 'create',
 			paymentObj: {
