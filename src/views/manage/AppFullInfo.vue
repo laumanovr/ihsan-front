@@ -314,6 +314,12 @@
 				/>
 				<v-text-field
 					outlined
+					label="Материал строения цвет"
+					v-model="appInformation.materialBuilt"
+					:readonly="isDisabled"
+				/>
+				<v-text-field
+					outlined
 					label="Общая площадь (жилья/объем авто)"
 					v-model="appInformation.totalArea"
 					:rules="requiredRule"
@@ -356,12 +362,6 @@
 					outlined
 					label="Код района недвижимости"
 					v-model="appInformation.districtCode"
-					:readonly="isDisabled"
-				/>
-				<v-text-field
-					outlined
-					label="Материал строения цвет"
-					v-model="appInformation.materialBuilt"
 					:readonly="isDisabled"
 				/>
 				<v-select
