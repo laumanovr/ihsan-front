@@ -50,6 +50,7 @@
 				<thead>
 				<tr>
 					<th>Пин клиента</th>
+					<th>Регион</th>
 					<th>Район</th>
 					<th>Адрес</th>
 					<th>Телефон</th>
@@ -61,6 +62,7 @@
 				<tbody>
 				<tr v-for="app in allApplications" :key="app.id">
 					<td>{{app.customerResource.pin}}</td>
+					<td>{{getRegionTitle(app.customerResource.regionId)}}</td>
 					<td>{{app.customerResource.regionTitle}}</td>
 					<td>{{app.customerResource.address}}</td>
 					<td>{{app.customerResource.phoneNumber}}</td>
@@ -494,6 +496,7 @@ export default {
 			districtList: [],
 			programTypes: [],
 			departmentList: [],
+			allLocationList: [],
 			allUsers: [],
 			filterBody: {
 				statuses: ['QUEUE'],
@@ -526,6 +529,7 @@ export default {
 	},
 	mounted() {
 		this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
+		this.getLocationList();
 		this.getAllApplications();
 		this.getAllRegions();
 		this.getProgramTypes();
@@ -542,6 +546,20 @@ export default {
 				this.isLoading = false;
 			} catch (err) {
 				this.$toast.error(err);
+			}
+		},
+
+		async getLocationList() {
+			try {
+				this.allLocationList = await RegionService.fetchAllLocationList();
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		getRegionTitle(regionId) {
+			if (regionId) {
+				return this.allLocationList.find((item) => item.id === regionId).parentTitle;
 			}
 		},
 
