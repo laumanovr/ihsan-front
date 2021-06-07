@@ -29,7 +29,7 @@
 					<td>{{app.departmentTitle}}</td>
 					<td>{{app.programType}}</td>
 					<td>
-						{{app.customerResource.lastName+' '+app.customerResource.firstName}}{{app.customerResource.middleName || ''}}
+						{{app.customerResource.lastName+' '+app.customerResource.firstName+' '}}{{app.customerResource.middleName || ''}}
 					</td>
 					<td>{{app.userTitle}}</td>
 				</tr>
@@ -39,6 +39,7 @@
 				<thead>
 				<tr>
 					<th>Пин клиента</th>
+					<th>Регион</th>
 					<th>Район</th>
 					<th>Адрес</th>
 					<th>Телефон</th>
@@ -50,6 +51,7 @@
 				<tbody>
 				<tr v-for="app in allApplications" :key="app.id">
 					<td>{{app.customerResource.pin}}</td>
+					<td>{{getRegionTitle(app.customerResource.regionId)}}</td>
 					<td>{{app.customerResource.regionTitle}}</td>
 					<td>{{app.customerResource.address}}</td>
 					<td>{{app.customerResource.phoneNumber}}</td>
@@ -84,6 +86,7 @@
 
 <script>
 import {ApplicationService} from '../../services/application.service';
+import {RegionService} from '../../services/region.service';
 
 export default {
 	data() {
@@ -91,6 +94,7 @@ export default {
 			requiredRule: [(v) => !!v || 'Обязательное поле'],
 			isLoading: false,
 			allApplications: [],
+			allLocationList: [],
 			currentPage: 1,
 			totalPages: [],
 			filterBody: {
@@ -115,6 +119,7 @@ export default {
 	},
 	mounted() {
 		this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
+		this.getLocationList();
 		this.getAllApplications();
 	},
 	methods: {
@@ -128,6 +133,20 @@ export default {
 			} catch (err) {
 				this.$toast.error(err);
 				this.isLoading = false;
+			}
+		},
+
+		async getLocationList() {
+			try {
+				this.allLocationList = await RegionService.fetchAllLocationList();
+			} catch (err) {
+				this.$toast.error(err);
+			}
+		},
+
+		getRegionTitle(regionId) {
+			if (regionId) {
+				return this.allLocationList.find((item) => item.id === regionId).parentTitle;
 			}
 		},
 
