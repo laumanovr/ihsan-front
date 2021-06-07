@@ -434,6 +434,7 @@
 								outlined
 								label="Сумма платежа"
 								class="amount-input"
+								type="number"
 								v-model.number="selectedPayObj.paymentAmount"
 							/>
 						</div>
@@ -701,9 +702,10 @@ export default {
 							item.paymentStatus = 'DRAFT';
 						}
 						return item;
-					}).map((item) => {
+					}).map((item, i, selfArr) => {
+						const leftMonth = selfArr.filter(i => i.paymentStatus === 'DRAFT').length;
 						if (!item.paymentAmount) {
-							item.paymentAmount = ((this.application.loanAmount - this.alreadyPaid) / this.application.loanTerm).toFixed(1);
+							item.paymentAmount = ((this.application.loanAmount - this.alreadyPaid) / leftMonth).toFixed(1);
 						}
 						return item;
 					});
