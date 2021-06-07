@@ -41,7 +41,7 @@
 					<td>{{app.registerDate}}</td>
 					<td>{{app.departmentTitle}}</td>
 					<td>{{app.programType}}</td>
-					<td>{{app.customerResource.lastName+' '+app.customerResource.firstName}}{{app.customerResource.middleName || ''}}</td>
+					<td>{{app.customerResource.lastName+' '+app.customerResource.firstName+' '}}{{app.customerResource.middleName || ''}}</td>
 					<td>{{app.userTitle}}</td>
 				</tr>
 				</tbody>
