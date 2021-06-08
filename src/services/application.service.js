@@ -70,4 +70,9 @@ export class ApplicationService {
 		const url = `${API_BASE_URL}/file/application/import`;
 		return sendPostRequest(url, body);
 	}
+
+	static removeApp(id) {
+		const url = `${API_BASE_URL}/application/?id=${id}`;
+		return sendDeleteRequest(url, {});
+	}
 }
