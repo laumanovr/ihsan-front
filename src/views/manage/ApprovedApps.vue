@@ -117,9 +117,9 @@ export default {
 			return this.permissions.some(i => i.code === 'show-all-issued');
 		}
 	},
-	mounted() {
+	async mounted() {
 		this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
-		this.getLocationList();
+		await this.getLocationList();
 		this.getAllApplications();
 	},
 	methods: {
