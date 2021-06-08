@@ -108,6 +108,13 @@
 			>
 				Изменить
 			</button>
+			<button
+				class="btn red-primary"
+				@click="deleteApplicationModal(true)"
+				v-if="permissions.some(i => i.code === 'delete-app')"
+			>
+				Удалить
+			</button>
 		</div>
 
 		<!--APPLICATION MODAL-->
@@ -428,6 +435,16 @@
 				<div class="btn-actions">
 					<button class="btn red-primary" @click="toggleImportModal">Отмена</button>
 					<button class="btn green-primary" @click="submitImport">Загрузить</button>
+				</div>
+			</div>
+		</modal>
+
+		<modal name="delete-modal" width="450px" height="auto">
+			<div class="modal-container">
+				<h3>Удалить?</h3>
+				<div class="btn-actions">
+					<button class="btn blue-primary" @click="$modal.hide('delete-modal')">Отмена</button>
+					<button class="btn red-primary" @click="deleteApplicationModal(false)">Удалить</button>
 				</div>
 			</div>
 		</modal>
@@ -790,6 +807,23 @@ export default {
 					this.isLoading = false;
 				}
 			}
+		},
+
+		async deleteApplicationModal(isConfirm) {
+			if (isConfirm) {
+				this.$modal.show('delete-modal');
+				return;
+			}
+			try {
+				this.isLoading = true;
+				await ApplicationService.removeApp(this.selectedApp.id);
+				this.$toast.success('Успешно удалено!');
+				this.getAllApplications();
+				this.$modal.hide('delete-modal');
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
 		}
 	}
 };
@@ -836,8 +870,13 @@ export default {
 			background: #fff;
 			padding: 10px 0;
 			width: 100%;
-			.btn:first-child {
-				margin: 0 20px 0 15px;
+			.btn {
+				&:first-child {
+					margin: 0 20px 0 15px;
+				}
+				&:last-child {
+					margin-left: 20px;
+				}
 			}
 		}
 		.pagination {
