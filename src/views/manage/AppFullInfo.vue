@@ -281,12 +281,9 @@
 					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
-				<v-select
+				<v-text-field
 					outlined
-					label="Тип (жилье, авто)"
-					:items="houseTypes"
-					item-text="title"
-					item-value="value"
+					label="Тип (жилье, квартира, дом, авто)"
 					v-model="appInformation.housingType"
 					:rules="requiredRule"
 					:readonly="isDisabled"
