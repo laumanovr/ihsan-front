@@ -45,7 +45,7 @@ export default {
 	},
 	methods: {
 		logout() {
-			this.$store.dispatch('account/logout');
+			this.$modal.show('logout-modal');
 		}
 	},
 };
