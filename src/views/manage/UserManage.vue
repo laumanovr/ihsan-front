@@ -7,17 +7,20 @@
 				<router-view/>
 			</div>
 		</div>
+		<LogoutModal/>
 	</div>
 </template>
 
 <script>
 import Sidebar from '@/components/general/Sidebar';
 import Header from '@/components/general/Header';
+import LogoutModal from '@/components/general/LogoutModal';
 
 export default {
 	components: {
 		Sidebar,
-		Header
+		Header,
+		LogoutModal
 	},
 	computed: {
 		userProfile() {
