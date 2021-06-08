@@ -15,7 +15,6 @@
 				item-text="title"
 				item-value="id"
 				v-model="filterObj.departmentId"
-				:rules="requiredRule"
 			/>
 			<v-menu
 				:close-on-content-click="true"
@@ -144,6 +143,7 @@ export default {
 		async getDepartments() {
 			try {
 				this.departments = await DepartmentService.fetchDepartmentList();
+				this.departments.unshift({title: 'Все филиалы', id: ''});
 			} catch (err) {
 				this.$toast.error(err);
 			}
