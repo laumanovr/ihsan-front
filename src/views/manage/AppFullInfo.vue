@@ -560,9 +560,11 @@ export default {
 				this.application = await ApplicationService.findById(this.$route.params.id);
 				this.application.customerDto = this.application.customerResource;
 				this.application.customerId = this.application.customerDto.id;
-				const res = await RegionService.findById(this.application.customerDto.regionId);
-				this.parentLocationId = res.parentId;
-				await this.getDistrict(this.parentLocationId);
+				if (this.application.customerDto.regionId) {
+					const res = await RegionService.findById(this.application.customerDto.regionId);
+					this.parentLocationId = res.parentId;
+					await this.getDistrict(this.parentLocationId);
+				}
 				await this.getAppEstateInformation();
 				this.getPaymentInfo();
 			} catch (err) {
