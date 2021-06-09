@@ -887,7 +887,7 @@ export default {
 			margin-top: 20px;
 			.select {
 				.v-select {
-					max-width: 70px;
+					max-width: 77px;
 					height: 50px;
 				}
 				.v-input__slot {
