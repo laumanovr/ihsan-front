@@ -702,14 +702,7 @@ export default {
 							item.paymentStatus = 'PAID';
 							this.alreadyPaid += item.paymentAmount;
 						} else {
-							item.paymentAmount = 0;
 							item.paymentStatus = 'DRAFT';
-						}
-						return item;
-					}).map((item, i, selfArr) => {
-						const leftMonth = selfArr.filter(i => i.paymentStatus === 'DRAFT').length;
-						if (!item.paymentAmount) {
-							item.paymentAmount = ((this.application.loanAmount - this.alreadyPaid) / leftMonth).toFixed(1);
 						}
 						return item;
 					});
