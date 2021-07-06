@@ -21,6 +21,11 @@
 			</div>
 		</div>
 
+		<form class="d-flex justify-center search">
+			<input type="text" placeholder="Найти по фио..." class="input-field">
+			<button class="btn green-primary" @click.prevent="searchApp">Поиск</button>
+		</form>
+
 		<div class="tables d-flex">
 			<table class="table fixed">
 				<thead>
@@ -37,7 +42,7 @@
 				<tbody>
 				<tr v-for="(app, i) in allApplications" :key="app.id">
 					<td><v-checkbox v-model="app.checked" @change="onSelectApp(app)"/></td>
-					<td>{{(currentPage - 1) * 10 + (i + 1)}}</td>
+					<td>{{(totalPageCount * 10) - (i + 1)}}</td>
 					<td>{{app.registerDate}}</td>
 					<td>{{app.departmentTitle}}</td>
 					<td>{{app.programType}}</td>
@@ -75,8 +80,12 @@
 		</div>
 
 		<div class="pagination d-flex align-center" v-if="totalPages.length > 1">
+			<div class="change-page d-flex align-center">
+				<span>Страница:</span>
+				<span>{{currentPage +' '+ 'из' +' '+ totalPages.length}}</span>
+			</div>
+			<div class="divider">|</div>
 			<div class="select d-flex align-center">
-				<label>Страница</label>
 				<v-select
 					solo
 					class="drop-down-pages"
@@ -84,12 +93,6 @@
 					v-model="currentPage"
 					@change="jumpToPage"
 				/>
-			</div>
-			<div class="divider">|</div>
-			<div class="change-page d-flex align-center">
-				<img src="../../assets/icons/arrow-right.svg" class="left" @click="paginate('left')">
-				<span>{{currentPage}}</span>
-				<img src="../../assets/icons/arrow-right.svg" @click="paginate('right')">
 			</div>
 		</div>
 
@@ -551,6 +554,7 @@ export default {
 			},
 			currentPage: 1,
 			totalPages: [],
+			totalPageCount: 0,
 			formData: new FormData(),
 			importObj: {
 				departmentId: '',
@@ -590,6 +594,7 @@ export default {
 				const res = await ApplicationService.fetchApplicationList(this.currentPage, this.filterBody);
 				this.allApplications = res._embedded ? res._embedded.applicationResourceList : [];
 				this.totalPages = new Array(res.page.totalPages).fill(0).map((i, p) => p + 1);
+				this.totalPageCount = this.totalPages.length;
 				this.isLoading = false;
 			} catch (err) {
 				this.$toast.error(err);
@@ -651,9 +656,10 @@ export default {
 			}
 		},
 
-		jumpToPage(page) {
+		async jumpToPage(page) {
 			this.currentPage = page;
-			this.getAllApplications();
+			await this.getAllApplications();
+			this.totalPageCount = (this.totalPages.length - page) + 1;
 		},
 
 		async getAllUsers() {
@@ -858,6 +864,10 @@ export default {
 				this.$toast.error(err);
 				this.isLoading = false;
 			}
+		},
+
+		async searchApp() {
+			console.log('test');
 		}
 	}
 };
@@ -866,6 +876,16 @@ export default {
 <style lang="scss">
 	.application-container {
 		margin-bottom: 50px;
+		.search {
+			margin-top: 25px;
+			.input-field {
+				margin-right: 10px;
+				width: 25%;
+			}
+			.btn {
+				max-width: 75px;
+			}
+		}
 		.tables {
 			flex-wrap: wrap;
 			table {
@@ -937,19 +957,12 @@ export default {
 				}
 			}
 			.divider {
-				margin: 0 25px 0 10px;
+				margin: 0 10px;
 			}
 			.change-page {
-				img {
-					transform: scale(2.2);
-					cursor: pointer;
-					&.left {
-						transform: rotate(180deg) scale(2.2);
-					}
-				}
 				span {
 					color: #000;
-					margin: 0 12px;
+					margin: 0 12px 0 0;
 					font-size: 17px;
 				}
 			}
