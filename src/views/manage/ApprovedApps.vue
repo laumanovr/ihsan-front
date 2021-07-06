@@ -53,9 +53,9 @@
 					<td>{{app.customerResource.pin}}</td>
 					<td>{{getRegionTitle(app.customerResource.regionId)}}</td>
 					<td>{{app.customerResource.regionTitle}}</td>
-					<td>{{app.customerResource.address}}</td>
+					<td><span class="short-info">{{app.customerResource.address}}</span></td>
 					<td>{{app.customerResource.phoneNumber}}</td>
-					<td>{{app.customerResource.jobPlace}}</td>
+					<td><span class="short-info">{{app.customerResource.jobPlace}}</span></td>
 					<td>{{app.monthlyIncome}}</td>
 					<td>{{app.proposedLoan}}</td>
 				</tr>
@@ -191,6 +191,14 @@ export default {
 				td {
 					padding: 0 10px;
 					height: 70px;
+					.short-info {
+						display: -webkit-box;
+						max-height: 70px;
+						overflow: hidden;
+						-webkit-line-clamp: 3;
+						-webkit-box-orient: vertical;
+						text-overflow: ellipsis;
+					}
 				}
 				&.fixed {
 					width: 50%;
