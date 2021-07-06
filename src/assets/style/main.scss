@@ -102,6 +102,19 @@ table.table {
   margin-right: 15px !important;
 }
 
+.input-field {
+  background: #fff;
+  border: 1px solid #9eabb7;
+  border-radius: 5px;
+  outline: none;
+  font-size: 15px;
+  padding-left: 7px;
+}
+
 .v-text-field > .v-input__control > .v-input__slot {
   min-height: 50px !important;
+}
+
+.v-text-field--outlined > .v-input__control > .v-input__slot {
+  background: #fff !important;
 }
