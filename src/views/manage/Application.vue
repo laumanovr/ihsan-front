@@ -64,9 +64,9 @@
 					<td>{{app.customerResource.pin}}</td>
 					<td>{{getRegionTitle(app.customerResource.regionId)}}</td>
 					<td>{{app.customerResource.regionTitle}}</td>
-					<td>{{app.customerResource.address}}</td>
+					<td><span class="short-info">{{app.customerResource.address}}</span></td>
 					<td>{{app.customerResource.phoneNumber}}</td>
-					<td>{{app.customerResource.jobPlace}}</td>
+					<td><span class="short-info">{{app.customerResource.jobPlace}}</span></td>
 					<td>{{app.monthlyIncome}}</td>
 					<td>{{app.proposedLoan}}</td>
 				</tr>
@@ -248,6 +248,36 @@
 						type="number"
 						:readonly="!permissions.some(i => i.code === 'proposedLoan')"
 					/>
+					<v-text-field
+							outlined
+							label="Вступительный взнос"
+							v-model.number="application.admissionFee"
+							:rules="requiredRule"
+							type="number"
+							@blur="countAdmissionPercent"
+					/>
+					<v-text-field
+							outlined
+							label="Вступит.взнос процент %"
+							v-model="application.admissionFeePercentage"
+							:rules="requiredRule"
+							readonly
+					/>
+					<v-text-field
+							outlined
+							label="Собственный вклад"
+							v-model="application.ownContribution"
+							:rules="requiredRule"
+							type="number"
+							@blur="countOwnContributionPercent(false)"
+					/>
+					<v-text-field
+							outlined
+							label="Собствен.вклад процент %"
+							v-model="application.ownContributionPercentage"
+							:rules="requiredRule"
+							readonly
+					/>
 					<v-file-input
 						label="Загрузить файлы"
 						outlined
@@ -310,7 +340,7 @@
 						v-model="application.ownContribution"
 						:rules="requiredRule"
 						type="number"
-						@blur="countOwnContributionPercent"
+						@blur="countOwnContributionPercent(true)"
 					/>
 					<v-text-field
 						outlined
@@ -584,14 +614,18 @@ export default {
 			if (this.application.admissionFee) {
 				const result = (this.application.admissionFee / this.application.proposedLoan) * 100;
 				this.application.admissionFeePercentage = result.toFixed(1);
+				this.$forceUpdate();
 			}
 		},
 
-		countOwnContributionPercent() {
+		countOwnContributionPercent(isCountDate) {
 			if (this.application.ownContribution) {
 				const result = (this.application.ownContribution / this.application.proposedLoan) * 100;
 				this.application.ownContributionPercentage = result.toFixed(1);
-				this.countPreliminaryDate();
+				this.$forceUpdate();
+				if (isCountDate) {
+					this.countPreliminaryDate();
+				}
 			}
 		},
 
@@ -852,6 +886,14 @@ export default {
 				td {
 					padding: 0 10px;
 					height: 70px;
+					.short-info {
+						display: -webkit-box;
+						max-height: 70px;
+						overflow: hidden;
+						-webkit-line-clamp: 3;
+						-webkit-box-orient: vertical;
+						text-overflow: ellipsis;
+					}
 				}
 				&.fixed {
 					width: 50%;
