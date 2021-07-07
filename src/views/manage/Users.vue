@@ -46,10 +46,26 @@
 						@click="resetPass(true, user)"
 						v-if="permissions.some(i => i.code === 'reset-pass')"
 					>
+					<img
+						src="../../assets/icons/delete-icon.svg"
+						title="Архивировать"
+						@click="archiveUser(user.id, true)"
+					>
 				</td>
 			</tr>
 			</tbody>
 		</table>
+
+		<!--ARCHIVE USER MODAL-->
+		<modal name="archive-modal" width="480px" height="auto">
+			<div class="modal-container">
+				<h3>Архивировать этого пользователя?</h3>
+				<div class="btn-actions">
+					<button class="btn blue-primary" @click="$modal.hide('archive-modal')">Отмена</button>
+					<button class="btn red-primary" @click="archiveUser('', false)">Архивировать</button>
+				</div>
+			</div>
+		</modal>
 
 		<!--USER MODAL-->
 		<modal name="user-modal" height="97%">
@@ -294,6 +310,24 @@ export default {
 					this.isLoading = false;
 				}
 			}
+		},
+
+		async archiveUser(userId, isConfirm) {
+			if (isConfirm) {
+				this.userObj.id = userId;
+				this.$modal.show('archive-modal');
+				return;
+			}
+			try {
+				this.isLoading = true;
+				await UserService.makeUserArchive(this.userObj.id);
+				this.getAllUsers();
+				this.$modal.hide('archive-modal');
+				this.$toast.success('Пользователь отправлен в архив!');
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
 		}
 	}
 };
@@ -309,7 +343,7 @@ export default {
 				cursor: pointer;
 				&.reset-icon {
 					width: 22px;
-					margin-left: 10px;
+					margin: 0 10px;
 				}
 			}
 		}
