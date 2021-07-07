@@ -172,6 +172,16 @@ export default {
 
 <style lang="scss">
 	.approved-application-container {
+		.search {
+			margin-top: 25px;
+			.input-field {
+				margin-right: 10px;
+				width: 25%;
+			}
+			.btn {
+				max-width: 75px;
+			}
+		}
 		.tables {
 			flex-wrap: wrap;
 			table {
