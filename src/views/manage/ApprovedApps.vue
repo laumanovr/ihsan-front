@@ -6,6 +6,11 @@
 			<span></span>
 		</div>
 
+		<form class="d-flex justify-center search" v-if="isShowAll">
+			<input type="text" placeholder="Найти по фио..." class="input-field" v-model="filterBody.userTitle">
+			<button class="btn green-primary" @click.prevent="searchApp">Поиск</button>
+		</form>
+
 		<div class="tables d-flex">
 			<table class="table fixed">
 				<thead>
@@ -99,7 +104,8 @@ export default {
 			totalPages: [],
 			filterBody: {
 				statuses: ['ISSUED', 'SAVING'],
-				userId: ''
+				userId: '',
+				userTitle: ''
 			}
 		};
 	},
@@ -163,6 +169,11 @@ export default {
 
 		jumpToPage(page) {
 			this.currentPage = page;
+			this.getAllApplications();
+		},
+
+		async searchApp() {
+			this.currentPage = 1;
 			this.getAllApplications();
 		}
 	}
