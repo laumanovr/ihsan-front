@@ -18,6 +18,11 @@ export class UserService {
 		return sendPostRequest(url, body);
 	}
 
+	static makeUserArchive(userId) {
+		const url = `${API_BASE_URL}/user/archive/${userId}`;
+		return sendPostRequest(url, {});
+	}
+
 	static fetchUserList() {
 		const url = `${API_BASE_URL}/user/list`;
 		return sendGetRequest(url);
