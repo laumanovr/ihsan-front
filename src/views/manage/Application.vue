@@ -612,7 +612,8 @@ export default {
 
 		getRegionTitle(regionId) {
 			if (regionId) {
-				return this.allLocationList.find((item) => item.id === regionId).parentTitle;
+				const obj = this.allLocationList.find((item) => item.id === regionId);
+				return obj ? obj.parentTitle : '';
 			}
 		},
 
