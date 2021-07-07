@@ -29,7 +29,7 @@
 					@click="$router.push({name: 'appFullInfo', params: {id: app.id}})"
 					class="link"
 				>
-					<td>{{(currentPage - 1) * 10 + (i + 1)}}</td>
+					<td><template v-if="totalPageCount > 1">{{(totalPageCount * 10) - (i + 1)}}</template></td>
 					<td>{{app.registerDate}}</td>
 					<td>{{app.departmentTitle}}</td>
 					<td>{{app.programType}}</td>
@@ -69,8 +69,12 @@
 		</div>
 
 		<div class="pagination d-flex align-center" v-if="totalPages.length > 1">
+			<div class="change-page d-flex align-center">
+				<span>Страница:</span>
+				<span>{{currentPage +' '+ 'из' +' '+ totalPages.length}}</span>
+			</div>
+			<div class="divider">|</div>
 			<div class="select d-flex align-center">
-				<label>Страница</label>
 				<v-select
 					solo
 					class="drop-down-pages"
@@ -78,12 +82,6 @@
 					v-model="currentPage"
 					@change="jumpToPage"
 				/>
-			</div>
-			<div class="divider">|</div>
-			<div class="change-page d-flex align-center">
-				<img src="../../assets/icons/arrow-right.svg" class="left" @click="paginate('left')">
-				<span>{{currentPage}}</span>
-				<img src="../../assets/icons/arrow-right.svg" @click="paginate('right')">
 			</div>
 		</div>
 	</div>
@@ -102,6 +100,7 @@ export default {
 			allLocationList: [],
 			currentPage: 1,
 			totalPages: [],
+			totalPageCount: 0,
 			filterBody: {
 				statuses: ['ISSUED', 'SAVING'],
 				userId: '',
@@ -135,6 +134,7 @@ export default {
 				const res = await ApplicationService.fetchApplicationList(this.currentPage, this.filterBody);
 				this.allApplications = res._embedded ? res._embedded.applicationResourceList : [];
 				this.totalPages = new Array(res.page.totalPages).fill(0).map((i, p) => p + 1);
+				this.totalPageCount = this.totalPages.length;
 				this.isLoading = false;
 			} catch (err) {
 				this.$toast.error(err);
@@ -156,20 +156,10 @@ export default {
 			}
 		},
 
-		paginate(nav) {
-			if (nav === 'right' && this.currentPage < this.totalPages.length) {
-				this.currentPage += 1;
-				this.getAllApplications();
-			}
-			if (nav === 'left' && this.currentPage > 1) {
-				this.currentPage -= 1;
-				this.getAllApplications();
-			}
-		},
-
-		jumpToPage(page) {
+		async jumpToPage(page) {
 			this.currentPage = page;
-			this.getAllApplications();
+			await this.getAllApplications();
+			this.totalPageCount = (this.totalPages.length - page) + 1;
 		},
 
 		async searchApp() {
