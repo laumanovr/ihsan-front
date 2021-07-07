@@ -50,6 +50,7 @@
 						src="../../assets/icons/delete-icon.svg"
 						title="Архивировать"
 						@click="archiveUser(user.id, true)"
+						v-if="permissions.some(i => i.code === 'archive-user')"
 					>
 				</td>
 			</tr>
