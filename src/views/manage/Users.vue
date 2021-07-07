@@ -33,6 +33,7 @@
 				<td>{{user.email}}</td>
 				<td>{{user.phone}}</td>
 				<td class="actions">
+					<template v-if="user.enabled">
 					<img
 						src="../../assets/icons/edit-icon.svg"
 						title="Редактировать"
@@ -52,6 +53,10 @@
 						@click="archiveUser(user.id, true)"
 						v-if="permissions.some(i => i.code === 'archive-user')"
 					>
+					</template>
+					<template v-else>
+						В архиве
+					</template>
 				</td>
 			</tr>
 			</tbody>
