@@ -21,8 +21,8 @@
 			</div>
 		</div>
 
-		<form class="d-flex justify-center search">
-			<input type="text" placeholder="Найти по фио..." class="input-field">
+		<form class="d-flex justify-center search" v-if="isShowAll">
+			<input type="text" placeholder="Найти по фио..." class="input-field" v-model="filterBody.userTitle">
 			<button class="btn green-primary" @click.prevent="searchApp">Поиск</button>
 		</form>
 
@@ -42,7 +42,7 @@
 				<tbody>
 				<tr v-for="(app, i) in allApplications" :key="app.id">
 					<td><v-checkbox v-model="app.checked" @change="onSelectApp(app)"/></td>
-					<td>{{(totalPageCount * 10) - (i + 1)}}</td>
+					<td><template v-if="totalPageCount > 1">{{(totalPageCount * 10) - (i + 1)}}</template></td>
 					<td>{{app.registerDate}}</td>
 					<td>{{app.departmentTitle}}</td>
 					<td>{{app.programType}}</td>
@@ -551,6 +551,7 @@ export default {
 			filterBody: {
 				statuses: ['QUEUE'],
 				userId: '',
+				userTitle: ''
 			},
 			currentPage: 1,
 			totalPages: [],
@@ -642,17 +643,6 @@ export default {
 				this.application.preliminaryDate = format(new Date(regDate.setDate(regDate.getDate() + 90)), 'dd.MM.yyyy');
 			} else {
 				this.application.preliminaryDate = format(new Date(regDate.setDate(regDate.getDate() + 180)), 'dd.MM.yyyy');
-			}
-		},
-
-		paginate(nav) {
-			if (nav === 'right' && this.currentPage < this.totalPages.length) {
-				this.currentPage += 1;
-				this.getAllApplications();
-			}
-			if (nav === 'left' && this.currentPage > 1) {
-				this.currentPage -= 1;
-				this.getAllApplications();
 			}
 		},
 
@@ -867,7 +857,8 @@ export default {
 		},
 
 		async searchApp() {
-			console.log('test');
+			this.currentPage = 1;
+			this.getAllApplications();
 		}
 	}
 };
