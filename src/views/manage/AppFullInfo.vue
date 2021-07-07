@@ -16,6 +16,17 @@
 		</div>
 
 		<v-form class="full-info" ref="fullInfoForm">
+			<div class="attach-files">
+				<h3>Прикрепленные файлы:</h3>
+				<label class="add-file" for="file">+<input type="file" id="file" @change="attachNewFile"></label>
+				<div class="items">
+					<div class="item d-flex align-center" v-for="(file, i) in application.attachments" :key="i">
+						<span>{{file.fileName}}</span>
+						<img src="../../assets/icons/download.svg" title="Скачать" @click="downloadAttachment(file)">
+						<img src="../../assets/icons/delete-icon.svg" title="Удалить" @click="deleteAttachFile(file.id, i)">
+					</div>
+				</div>
+			</div>
 			<div class="client-info">
 				<div class="created-by">Создан: <span>{{application.createdBy.replace('null', '')}}</span></div>
 				<h3>Информация о заемщике</h3>
@@ -143,15 +154,6 @@
 					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
-				<div class="attach-files" v-if="application.attachments.length">
-					<span>Прикрепленные файлы:</span>
-					<div class="items">
-						<div class="item d-flex align-center" v-for="(file, i) in application.attachments" :key="i">
-							<span>{{file.fileName}}</span>
-							<img src="../../assets/icons/download.svg" title="Скачать" @click="downloadAttachment(file)">
-						</div>
-					</div>
-				</div>
 			</div>
 
 			<div class="loan-info">
@@ -769,6 +771,35 @@ export default {
 				this.$toast.error(err);
 				this.isLoading = false;
 			}
+		},
+
+		async attachNewFile(e) {
+			const formData = new FormData();
+			const file = e.target.files[0];
+			formData.append('files', file);
+			try {
+				this.isLoading = true;
+				const res = await ApplicationService.attachFile(this.$route.params.id, formData);
+				this.application.attachments.push(res[0]);
+				this.isLoading = false;
+				this.$toast.success('Успешно добавили файл!');
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
+		},
+
+		async deleteAttachFile(fileId, index) {
+			try {
+				this.isLoading = true;
+				await ApplicationService.deleteFile(fileId);
+				this.application.attachments.splice(index, 1);
+				this.isLoading = false;
+				this.$toast.success('Удалено!');
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
 		}
 	}
 };
@@ -818,6 +849,17 @@ export default {
 			padding-bottom: 5px;
 			font-size: 15px;
 			color: #797979;
+			.add-file {
+				background: #00c7a3;
+				color: #fff;
+				font-size: 20px;
+				padding: 0 10px;
+				border-radius: 4px;
+				cursor: pointer;
+				input {
+					display: none;
+				}
+			}
 			.item {
 				span {
 					color: #026dc1;
