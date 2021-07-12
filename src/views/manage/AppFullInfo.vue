@@ -280,35 +280,30 @@
 					outlined
 					label="Адрес жилья"
 					v-model="appInformation.accommodationAddress"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Тип (жилье, квартира, дом, авто)"
 					v-model="appInformation.housingType"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Идентиф. код жилья (гос.номер)"
 					v-model="appInformation.identificationCode"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Комнаты"
 					v-model="appInformation.room"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Год постройки"
 					v-model="appInformation.yearBuild"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
@@ -321,28 +316,24 @@
 					outlined
 					label="Общая площадь (жилья/объем авто)"
 					v-model="appInformation.totalArea"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Стоимость жилья"
 					v-model="appInformation.houseCost"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Платеж/Доход (PTI)"
 					v-model="appInformation.pti"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
 					outlined
 					label="Займ/стоимость жилья (LTV)"
 					v-model="appInformation.ltv"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
@@ -380,7 +371,6 @@
 					item-text="title"
 					item-value="id"
 					v-model="appInformation.locationId"
-					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
 				<v-text-field
