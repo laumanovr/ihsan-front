@@ -433,26 +433,17 @@
 				<v-form ref="importForm">
 					<v-select
 						outlined
-						label="Филиал"
-						:items="departmentList"
-						item-text="title"
-						item-value="id"
-						v-model="importObj.departmentId"
-						:rules="requiredRule"
-					/>
-					<v-select
-						outlined
 						label="Менеджер"
 						:items="allUsers"
 						item-text="fullName"
-						item-value="id"
-						v-model="importObj.managerId"
+						return-object
+						@change="onSelectManager"
 						:rules="requiredRule"
 					/>
 					<v-select
 						outlined
 						label="Статус"
-						:items="statuses"
+						:items="statuses.slice(0, 2)"
 						item-text="title"
 						item-value="value"
 						v-model="importObj.statusType"
@@ -463,6 +454,7 @@
 						prepend-icon=""
 						label="Выбрать файл"
 						v-model="importObj.file"
+						:rules="fileRequired"
 					/>
 				</v-form>
 				<div class="btn-actions">
@@ -500,6 +492,7 @@ export default {
 	data() {
 		return {
 			requiredRule: [(v) => !!v || 'Обязательное поле'],
+			fileRequired: [(v) => v.size > 0 || 'Обязательное поле'],
 			isLoading: false,
 			statuses: [
 				{title: 'Очередь', value: 'QUEUE'},
@@ -817,6 +810,11 @@ export default {
 
 		toggleImportModal() {
 			this.$modal.toggle('import-modal');
+		},
+
+		onSelectManager(selectedUser) {
+			this.importObj.managerId = selectedUser.id;
+			this.importObj.departmentId = selectedUser.departmentList[0].id;
 		},
 
 		async submitImport() {

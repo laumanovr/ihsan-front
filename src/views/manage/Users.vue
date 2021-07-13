@@ -29,7 +29,7 @@
 				<td>{{i + 1}}</td>
 				<td>{{user.lastName+' '+user.firstName}}</td>
 				<td>{{user.position}}</td>
-				<td>{{user.departmentList[0]}}</td>
+				<td>{{user.departmentList[0].title}}</td>
 				<td>{{user.email}}</td>
 				<td>{{user.phone}}</td>
 				<td class="actions">
