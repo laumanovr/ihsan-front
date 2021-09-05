@@ -696,7 +696,7 @@ export default {
 			this.mode = mode;
 			this.formData = new FormData();
 			if (mode === 'add') {
-				this.application = {customerDto: {}, statusType: 'QUEUE'};
+				this.application = {customerDto: {}, statusType: 'QUEUE', userId: ''};
 			}
 			if (mode === 'edit') {
 				this.application = this.selectedApp;
@@ -718,7 +718,7 @@ export default {
 		},
 
 		onSelectApp(app) {
-			this.selectedApp = app.checked ? app : '';
+			this.selectedApp = app.checked ? Object.assign({}, app, {managerTitle: app.userTitle || ''}) : '';
 			this.allApplications.map((item) => {
 				if (app.id !== item.id) {
 					item.checked = false;
