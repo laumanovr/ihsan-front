@@ -21,7 +21,7 @@
 			</div>
 		</div>
 
-		<form class="d-flex justify-center search" v-if="isShowAll">
+		<form class="d-flex justify-center search">
 			<input type="text" placeholder="Найти по фио..." class="input-field" v-model="filterBody.userTitle">
 			<button class="btn green-primary" @click.prevent="searchApp">Поиск</button>
 		</form>
@@ -182,8 +182,8 @@
 						label="Ответственный менеджер"
 						:items="allUsers"
 						item-text="fullName"
-						item-value="id"
-						v-model="application.userId"
+						item-value="fullName"
+						v-model="application.managerTitle"
 						:rules="requiredRule"
 						:readonly="!permissions.some(i => i.code === 'userTitle')"
 					/>
@@ -433,11 +433,12 @@
 				<v-form ref="importForm">
 					<v-select
 						outlined
-						label="Менеджер"
-						:items="allUsers"
-						item-text="fullName"
-						return-object
-						@change="onSelectManager"
+						label="Филиал"
+						:items="departmentList"
+						item-text="title"
+						item-value="id"
+						v-model="
+						importObj.departmentId"
 						:rules="requiredRule"
 					/>
 					<v-select
@@ -511,7 +512,8 @@ export default {
 					pin: '',
 					regionId: 0
 				},
-				userId: 0,
+				userId: null,
+				managerTitle: '',
 				departmentId: 0,
 				monthlyIncome: 0,
 				programTypeId: 0,
@@ -552,7 +554,6 @@ export default {
 			formData: new FormData(),
 			importObj: {
 				departmentId: '',
-				managerId: '',
 				statusType: '',
 				file: {}
 			}
@@ -573,7 +574,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
+		// this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
 		this.getLocationList();
 		this.getAllApplications();
 		this.getAllRegions();
@@ -810,11 +811,6 @@ export default {
 
 		toggleImportModal() {
 			this.$modal.toggle('import-modal');
-		},
-
-		onSelectManager(selectedUser) {
-			this.importObj.managerId = selectedUser.id;
-			this.importObj.departmentId = selectedUser.departmentList[0].id;
 		},
 
 		async submitImport() {
