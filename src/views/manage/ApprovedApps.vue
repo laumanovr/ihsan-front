@@ -6,7 +6,7 @@
 			<span></span>
 		</div>
 
-		<form class="d-flex justify-center search" v-if="isShowAll">
+		<form class="d-flex justify-center search">
 			<input type="text" placeholder="Найти по фио..." class="input-field" v-model="filterBody.userTitle">
 			<button class="btn green-primary" @click.prevent="searchApp">Поиск</button>
 		</form>
@@ -123,7 +123,7 @@ export default {
 		}
 	},
 	async mounted() {
-		this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
+		// this.filterBody.userId = this.isShowAll ? '' : this.userProfile.user.id;
 		await this.getLocationList();
 		this.getAllApplications();
 	},
