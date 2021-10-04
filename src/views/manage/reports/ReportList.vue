@@ -10,18 +10,33 @@
 			</tr>
 			</thead>
 			<tbody>
-			<tr>
-				<td>1</td>
-				<td><router-link :to="{name: 'programReport'}">Отчет по программам</router-link></td>
-			</tr>
-			<tr>
-				<td>2</td>
-				<td><router-link :to="{name: 'managerReport'}">Отчет по менеджерам</router-link></td>
+			<tr v-for="(report, i) in reportList" :key="i">
+				<td>{{i + 1}}</td>
+				<td><router-link :to="{name: report.link}">{{report.title}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>
 	</div>
 </template>
+
+<script>
+export default {
+	data() {
+		return {
+			reportList: [
+				{title: 'Отчет по программам', link: 'programReport'},
+				{title: 'Отчет по менеджерам', link: 'managerReport'},
+				{title: 'Отчет по Выдачи', link: 'issuedLoan'},
+				{title: 'Отчет Очередь-накопительное', link: 'queueSaving'},
+				{title: 'Отчет Приход-расход', link: 'arrivalExpense'},
+				{title: 'Отчет Расход-выдачи', link: 'expenseIssue'},
+				{title: 'Отчет Контроль-погашений', link: 'repaymentControl'},
+				{title: 'Отчет Контроль-взносов', link: 'admissionControl'}
+			]
+		};
+	}
+};
+</script>
 
 <style lang="scss">
 	.report-container {
