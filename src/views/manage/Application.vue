@@ -790,6 +790,7 @@ export default {
 				this.application.customerDto = this.selectedApp.customerResource;
 				this.application.customerId = this.application.customerDto.id;
 				this.$modal.show('approve-modal');
+				this.countPreliminaryDate();
 				return;
 			}
 			if (!this.$refs.approveForm.validate()) {
