@@ -87,8 +87,8 @@
 					label="Ответственный менеджер"
 					:items="allUsers"
 					item-text="fullName"
-					item-value="id"
-					v-model="application.userId"
+					item-value="fullName"
+					v-model="application.userTitle"
 					:rules="requiredRule"
 					:readonly="isDisabled"
 				/>
