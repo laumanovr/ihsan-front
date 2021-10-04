@@ -131,7 +131,7 @@ export default {
 
 		countSharePercent(currentLoanCount) {
 			const totalIssuedLoans = this.issuedLoans.reduce((sum, li) => sum + li.totalCount, 0);
-			return (currentLoanCount / totalIssuedLoans) * 100;
+			return ((currentLoanCount / totalIssuedLoans) * 100).toFixed(1);
 		},
 
 		countPti(item) {
