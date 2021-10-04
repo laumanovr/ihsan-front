@@ -42,30 +42,6 @@ const routes = [
 				}
 			},
 			{
-				path: 'reports',
-				name: 'reports',
-				component: loadComponent('manage/reports/ReportList'),
-				meta: {
-					requireAuth: true
-				}
-			},
-			{
-				path: 'program-report',
-				name: 'programReport',
-				component: loadComponent('manage/reports/ProgramReport'),
-				meta: {
-					requireAuth: true
-				}
-			},
-			{
-				path: 'manager-report',
-				name: 'managerReport',
-				component: loadComponent('manage/reports/ManagerReport'),
-				meta: {
-					requireAuth: true
-				}
-			},
-			{
 				path: 'approved-apps/:id/full-info',
 				name: 'appFullInfo',
 				component: loadComponent('manage/AppFullInfo')
@@ -114,6 +90,78 @@ const routes = [
 				path: 'profile',
 				name: 'profile',
 				component: loadComponent('manage/Profile'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'reports',
+				name: 'reports',
+				component: loadComponent('manage/reports/ReportList'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'program-report',
+				name: 'programReport',
+				component: loadComponent('manage/reports/ProgramReport'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'manager-report',
+				name: 'managerReport',
+				component: loadComponent('manage/reports/ManagerReport'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'issued-loan',
+				name: 'issuedLoan',
+				component: loadComponent('manage/reports/IssuedLoan'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'queue-saving',
+				name: 'queueSaving',
+				component: loadComponent('manage/reports/QueueSaving'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'arrival-expense',
+				name: 'arrivalExpense',
+				component: loadComponent('manage/reports/ArrivalExpense'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'expense-issue',
+				name: 'expenseIssue',
+				component: loadComponent('manage/reports/ExpenseIssue'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'repayment-control',
+				name: 'repaymentControl',
+				component: loadComponent('manage/reports/RepaymentControl'),
+				meta: {
+					requireAuth: true
+				}
+			},
+			{
+				path: 'admission-control',
+				name: 'admissionControl',
+				component: loadComponent('manage/reports/AdmissionControl'),
 				meta: {
 					requireAuth: true
 				}
