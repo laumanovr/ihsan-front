@@ -78,8 +78,9 @@ export default {
 	},
 	created() {
 		const date = new Date();
-		this.startDate = format(date.setMonth(date.getMonth() - 3), 'dd.MM.yyyy');
+		this.startDate = format(date.setFullYear(date.getFullYear() - 1), 'dd.MM.yyyy');
 		this.endDate = format(new Date(), 'dd.MM.yyyy');
+		this.getExpenseIssueReport();
 	},
 	methods: {
 		async getExpenseIssueReport() {
