@@ -5,8 +5,8 @@ import axios from 'axios';
 export class ApplicationService {
 	constructor() {}
 
-	static fetchApplicationList(page, body) {
-		const url = `${API_BASE_URL}/application/list?page=${page - 1}`;
+	static fetchApplicationList(page, body, size=10) {
+		const url = `${API_BASE_URL}/application/list?page=${page - 1}&size=${size}`;
 		return sendPostRequest(url, body);
 	}
 
