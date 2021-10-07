@@ -3,7 +3,11 @@
 		<PreLoader v-if="isLoading"/>
 		<div class="head-title d-flex align-center justify-space-between">
 			<span>Одобренные заявки</span>
-			<span></span>
+			<ExcelExport :headers="excelHeaders" :rows="excelRows" :fileName="excelName" ref="excel">
+				<template v-slot:excel>
+					<button class="btn blue-primary" @click="exportToExcel" style="min-width: 170px">Экспортировать</button>
+				</template>
+			</ExcelExport>
 		</div>
 
 		<form class="d-flex justify-center search">
@@ -90,8 +94,12 @@
 <script>
 import {ApplicationService} from '../../services/application.service';
 import {RegionService} from '../../services/region.service';
+import ExcelExport from '@/components/general/ExcelJs';
 
 export default {
+	components: {
+		ExcelExport
+	},
 	data() {
 		return {
 			requiredRule: [(v) => !!v || 'Обязательное поле'],
@@ -105,7 +113,10 @@ export default {
 				statuses: ['ISSUED', 'SAVING'],
 				userId: '',
 				userTitle: ''
-			}
+			},
+			excelHeaders: [],
+			excelRows: [],
+			excelName: ''
 		};
 	},
 	computed: {
@@ -165,6 +176,55 @@ export default {
 		async searchApp() {
 			this.currentPage = 1;
 			this.getAllApplications();
+		},
+
+		async exportToExcel() {
+			try {
+				this.isLoading = true;
+				this.filterBody.userTitle = '';
+				const res = await ApplicationService.fetchApplicationList(1, this.filterBody, this.totalPageCount * 10);
+				this.allApplications = res._embedded ? res._embedded.applicationResourceList : [];
+				this.excelName = 'Одобренные Заявки';
+				this.excelHeaders = [
+					'Дата регистрации',
+					'Филиал',
+					'Программа',
+					'ФИО',
+					'Менеджер',
+					'Пин клиента',
+					'Регион',
+					'Район',
+					'Адрес',
+					'Телефон',
+					'Место работы',
+					'Доход',
+					'Предв. стоимость(жилья/авто)'
+				];
+				this.excelRows = this.allApplications.map((i) => {
+					return [
+						i.registerDate,
+						i.departmentTitle,
+						i.programType,
+						i.customerResource.lastName+' '+i.customerResource.firstName,
+						i.userTitle,
+						i.customerResource.pin,
+						this.getRegionTitle(i.customerResource.regionId),
+						i.customerResource.regionTitle,
+						i.customerResource.address,
+						i.customerResource.phoneNumber,
+						i.customerResource.jobPlace,
+						i.monthlyIncome,
+						i.proposedLoan
+					];
+				});
+				this.$nextTick(() => {
+					this.$refs.excel.exportExcel();
+					this.isLoading = false;
+				});
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
 		}
 	}
 };
