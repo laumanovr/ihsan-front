@@ -5,6 +5,12 @@
             <span>Отчет Расход-выдачи</span>
         </div>
 
+        <ExcelExport :headers="excelHeaders" :rows="excelRows" :fileName="excelName" ref="excel" class="d-flex justify-end">
+            <template v-slot:excel>
+                <button class="btn blue-primary" @click="exportToExcel" style="min-width: 170px">Экспортировать</button>
+            </template>
+        </ExcelExport>
+
         <div class="d-flex align-center justify-center">
             <div class="masked-input">
                 <span>Дата от</span>
@@ -58,10 +64,12 @@
 <script>
 import {ReportService} from '../../../services/report.service';
 import {format} from 'date-fns';
+import ExcelExport from '@/components/general/ExcelJs';
 
 export default {
 	components: {
-		MaskedInput: () => import('vue-masked-input')
+		MaskedInput: () => import('vue-masked-input'),
+		ExcelExport
 	},
 	data() {
 		return {
@@ -73,7 +81,10 @@ export default {
 			programType: {
 				'0': 'Авто',
 				'1': 'Жилье'
-			}
+			},
+			excelHeaders: [],
+			excelRows: [],
+			excelName: ''
 		};
 	},
 	created() {
@@ -93,6 +104,29 @@ export default {
 				this.$toast.error(err);
 				this.isLoading = false;
 			}
+		},
+
+		async exportToExcel() {
+			this.excelName = 'Отчет Расход-выдачи';
+			this.excelHeaders = [
+				'Филиал',
+				'Программа',
+				'Кол-во',
+				'Займы',
+				'Собственный'
+			];
+			this.excelRows = this.reportList.map((i) => {
+				return [
+					i.departmentTitle,
+					this.programType[i.programType],
+					i.totalCount,
+					i.totalLoanAmount,
+					i.totalOwnContribution
+				];
+			});
+			this.$nextTick(() => {
+				this.$refs.excel.exportExcel();
+			});
 		}
 	}
 };
