@@ -5,6 +5,12 @@
             <span>Отчет Очередь-Накопительное</span>
         </div>
 
+        <ExcelExport :headers="excelHeaders" :rows="excelRows" :fileName="excelName" ref="excel" class="d-flex justify-end">
+            <template v-slot:excel>
+                <button class="btn blue-primary" @click="exportToExcel" style="min-width: 170px">Экспортировать</button>
+            </template>
+        </ExcelExport>
+
         <div class="d-flex align-center justify-center">
             <div class="masked-input">
                 <span>Дата от</span>
@@ -70,10 +76,12 @@
 <script>
 import {ReportService} from '../../../services/report.service';
 import {format} from 'date-fns';
+import ExcelExport from '@/components/general/ExcelJs';
 
 export default {
 	components: {
-		MaskedInput: () => import('vue-masked-input')
+		MaskedInput: () => import('vue-masked-input'),
+		ExcelExport
 	},
 	data() {
 		return {
@@ -91,7 +99,10 @@ export default {
 				'1': 'Отказ',
 				'2': 'Выдано',
 				'3': 'Накопительный',
-			}
+			},
+			excelHeaders: [],
+			excelRows: [],
+			excelName: ''
 		};
 	},
 	created() {
@@ -119,7 +130,7 @@ export default {
 
 		countSharePercent(currentLoanCount) {
 			const totalIssuedLoans = this.queueSavings.reduce((sum, li) => sum + li.totalCount, 0);
-			return (currentLoanCount / totalIssuedLoans) * 100;
+			return ((currentLoanCount / totalIssuedLoans) * 100).toFixed(2);
 		},
 
 		countAvgLoanSum(item) {
@@ -128,6 +139,33 @@ export default {
 
 		countNeededSum(item) {
 			return (item.totalCount * this.countAvgLoanSum(item)).toFixed(1);
+		},
+
+		async exportToExcel() {
+			this.excelName = 'Отчет Очередь накопительное';
+			this.excelHeaders = [
+				'Филиал',
+				'Тип',
+				'Статус',
+				'Предв.ст-ть жилья \n Кол-во | Сумма',
+				'Доля',
+				'Сред.сумма кредита',
+				'Необходимая сумма'
+			];
+			this.excelRows = this.queueSavings.map((i) => {
+				return [
+					i.departmentTitle,
+					this.programType[i.programType],
+					this.statuses[i.statusType],
+					i.totalCount + ' | ' + this.formatNum(i.avgProposedCost).toFixed(2),
+					this.countSharePercent(i.totalCount),
+					this.countAvgLoanSum(i),
+					this.countNeededSum(i)
+				];
+			});
+			this.$nextTick(() => {
+				this.$refs.excel.exportExcel();
+			});
 		}
 	}
 };
