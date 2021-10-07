@@ -5,6 +5,13 @@
             <span>Отчет Контроль-взносов</span>
         </div>
 
+        <ExcelExport :headers="excelHeaders" :rows="excelRows" :fileName="excelName" ref="excel"
+                     class="d-flex justify-end">
+            <template v-slot:excel>
+                <button class="btn blue-primary" @click="exportToExcel" style="min-width: 170px">Экспортировать</button>
+            </template>
+        </ExcelExport>
+
         <div class="d-flex align-center justify-center">
             <div class="masked-input">
                 <span>Дата от</span>
@@ -84,10 +91,12 @@
 <script>
 import {ReportService} from '../../../services/report.service';
 import {format} from 'date-fns';
+import ExcelExport from '@/components/general/ExcelJs';
 
 export default {
 	components: {
-		MaskedInput: () => import('vue-masked-input')
+		MaskedInput: () => import('vue-masked-input'),
+		ExcelExport
 	},
 	data() {
 		return {
@@ -99,7 +108,10 @@ export default {
 			programType: {
 				'0': 'Авто',
 				'1': 'Жилье'
-			}
+			},
+			excelHeaders: [],
+			excelRows: [],
+			excelName: ''
 		};
 	},
 	created() {
@@ -126,7 +138,28 @@ export default {
 		},
 
 		countPlanOwnContrib(item) {
-			return(item.totalProposedCost * (Number(item.programPercent) / 100)).toFixed(2);
+			return (item.totalProposedCost * (Number(item.programPercent) / 100)).toFixed(2);
+		},
+
+		async exportToExcel() {
+			this.excelName = 'Отчет Очередь накопительное';
+			this.excelHeaders = [
+				'Филиал',
+				'Программа',
+				'Вступит.взнос(3%, 5%, 7%) \n кол-во | план | оплачено | разница',
+				'Собств.вклад(25%, 35%, 50%) \n кол-во | план | оплачено | разница'
+			];
+			this.excelRows = this.queueSavings.map((i) => {
+				return [
+					i.departmentTitle,
+					this.programType[i.programType],
+					i.totalCount + ' | ' + this.countPlanAdmission(i) + ' | ' + i.totalAdmissionFee + ' | ' + (this.countPlanAdmission(i) - i.totalAdmissionFee).toFixed(2),
+					i.totalCount + ' | ' + this.countPlanOwnContrib(i) + ' | ' + i.totalOwnContribution + ' | ' + (this.countPlanOwnContrib(i) - i.totalOwnContribution).toFixed(2)
+				];
+			});
+			this.$nextTick(() => {
+				this.$refs.excel.exportExcel();
+			});
 		}
 	}
 };
@@ -151,8 +184,10 @@ export default {
             th, td {
                 white-space: nowrap;
             }
+
             .quad span {
                 width: 98px;
+
                 &:first-child {
                     border-left: 1px solid;
                 }
