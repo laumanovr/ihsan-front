@@ -3,21 +3,26 @@
 		<PreLoader v-if="isLoading"/>
 		<div class="head-title d-flex align-center justify-space-between">
 			<span>Заявки</span>
-			<div class="d-flex justify-space-between" style="width: 420px">
-			<button
-				class="btn blue-primary"
-				@click="toggleAppModal('add')"
-				v-if="permissions.some(i => i.code === 'app-create/edit')"
-			>
-				Создать заявку
-			</button>
-			<button
-				class="btn blue-primary"
-				@click="toggleImportModal"
-				v-if="permissions.some(i => i.code === 'app-create/edit')"
-			>
-				Импорт
-			</button>
+			<div class="d-flex justify-space-between" style="width: 55%">
+				<button
+					class="btn blue-primary"
+					@click="toggleAppModal('add')"
+					v-if="permissions.some(i => i.code === 'app-create/edit')"
+				>
+					Создать заявку
+				</button>
+				<button
+					class="btn blue-primary"
+					@click="toggleImportModal"
+					v-if="permissions.some(i => i.code === 'app-create/edit')"
+				>
+					Импорт
+				</button>
+				<ExcelExport :headers="excelHeaders" :rows="excelRows" :fileName="excelName" ref="excel" class="export">
+					<template v-slot:excel>
+						<button class="btn blue-primary" @click="exportToExcel">Экспортировать</button>
+					</template>
+				</ExcelExport>
 			</div>
 		</div>
 
@@ -485,10 +490,12 @@ import {ApplicationService} from '../../services/application.service';
 import {UserService} from '../../services/user.service';
 import MaskedInput from 'vue-masked-input';
 import {format, parse} from 'date-fns';
+import ExcelExport from '@/components/general/ExcelJs';
 
 export default {
 	components: {
-		MaskedInput
+		MaskedInput,
+		ExcelExport
 	},
 	data() {
 		return {
@@ -556,7 +563,10 @@ export default {
 				departmentId: '',
 				statusType: '',
 				file: {}
-			}
+			},
+			excelHeaders: [],
+			excelRows: [],
+			excelName: ''
 		};
 	},
 	computed: {
@@ -855,6 +865,55 @@ export default {
 		async searchApp() {
 			this.currentPage = 1;
 			this.getAllApplications();
+		},
+
+		async exportToExcel() {
+			try {
+				this.isLoading = true;
+				this.filterBody.userTitle = '';
+				const res = await ApplicationService.fetchApplicationList(1, this.filterBody, this.totalPageCount * 10);
+				this.allApplications = res._embedded ? res._embedded.applicationResourceList : [];
+				this.excelName = 'Заявки';
+				this.excelHeaders = [
+					'Дата регистрации',
+					'Филиал',
+					'Программа',
+					'ФИО',
+					'Менеджер',
+					'Пин клиента',
+					'Регион',
+					'Район',
+					'Адрес',
+					'Телефон',
+					'Место работы',
+					'Доход',
+					'Предв. стоимость(жилья/авто)'
+				];
+				this.excelRows = this.allApplications.map((i) => {
+					return [
+						i.registerDate,
+						i.departmentTitle,
+						i.programType,
+						i.customerResource.lastName+' '+i.customerResource.firstName,
+						i.userTitle,
+						i.customerResource.pin,
+						this.getRegionTitle(i.customerResource.regionId),
+						i.customerResource.regionTitle,
+						i.customerResource.address,
+						i.customerResource.phoneNumber,
+						i.customerResource.jobPlace,
+						i.monthlyIncome,
+						i.proposedLoan
+					];
+				});
+				this.$nextTick(() => {
+					this.$refs.excel.exportExcel();
+					this.isLoading = false;
+				});
+			} catch (err) {
+				this.$toast.error(err);
+				this.isLoading = false;
+			}
 		}
 	}
 };
@@ -965,6 +1024,11 @@ export default {
 					margin-left: 10px;
 					cursor: pointer;
 				}
+			}
+		}
+		.export {
+			.btn {
+				min-width: 170px;
 			}
 		}
 	}
